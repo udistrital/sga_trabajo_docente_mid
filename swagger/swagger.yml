@@ -1,0 +1,409 @@
+swagger: "2.0"
+info:
+  title: SGA MID - Plan Trabajo Docente
+  description: Microservicio MID del SGA MID que complementa plan de trabajo docente
+  version: 1.0.0
+basePath: /v1
+paths:
+  /asignacion/:
+    get:
+      tags:
+      - asignacion
+      description: Listar todas las asignaciones de la vigencia determinada
+      operationId: AsignacionController.Asignacion
+      parameters:
+      - in: query
+        name: vigencia
+        description: Vigencia de las asignaciones
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{}'
+        "404":
+          description: he request contains an incorrect parameter or no record exist
+  /asignacion/docente:
+    get:
+      tags:
+      - asignacion
+      description: Listar todas las asignaciones de la vigencia determinada de un docente
+      operationId: AsignacionController.AsignacionDocente
+      parameters:
+      - in: query
+        name: docente
+        description: Id docente
+        required: true
+        type: string
+      - in: query
+        name: vigencia
+        description: Vigencia de las asignaciones
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{}'
+        "404":
+          description: he request contains an incorrect parameter or no record exist
+  /docente/documento:
+    get:
+      tags:
+      - docente
+      description: Listar los docentes de acuerdo a la vinculacion y su documento
+      operationId: DocenteController.DocumentoDocenteVinculacion
+      parameters:
+      - in: query
+        name: documento
+        description: Documento docente
+        required: true
+        type: string
+      - in: query
+        name: vinculacion
+        description: Id tipo de vinculación
+        required: true
+        type: integer
+        format: int64
+      responses:
+        "200":
+          description: '{}'
+        "404":
+          description: he request contains an incorrect parameter or no record exist
+  /docente/nombre:
+    get:
+      tags:
+      - docente
+      description: Listar los docentes de acuerdo a la vinculacion y su nombre
+      operationId: DocenteController.NombreDocenteVinculacion
+      parameters:
+      - in: query
+        name: nombre
+        description: Nombre docente
+        required: true
+        type: string
+      - in: query
+        name: vinculacion
+        description: Id tipo de vinculación
+        required: true
+        type: integer
+        format: int64
+      responses:
+        "200":
+          description: '{}'
+        "404":
+          description: he request contains an incorrect parameter or no record exist
+  /espacio-academico/grupo:
+    get:
+      tags:
+      - espacio-academico
+      description: Lista los grupos de un espacios académico padre por vigencia
+      operationId: EspacioAcademicoController.GrupoEspacioAcademico
+      parameters:
+      - in: query
+        name: padre
+        description: Id del espacio académico padre
+        required: true
+        type: string
+      - in: query
+        name: vigencia
+        description: Vigencia del espacio académico
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{}'
+        "404":
+          description: he request contains an incorrect parameter or no record exist
+  /espacio-academico/grupo-padre:
+    get:
+      tags:
+      - espacio-academico
+      description: Lista los grupos de un espacios académico padre
+      operationId: EspacioAcademicoController.GrupoEspacioAcademicoPadre
+      parameters:
+      - in: query
+        name: padre
+        description: Id del espacio académico padre
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{}'
+        "404":
+          description: he request contains an incorrect parameter or no record exist
+  /espacio-fisico/dependencia:
+    get:
+      tags:
+      - espacio-fisico
+      description: Lista opciones espacios físicos asignados a una dependencia
+      operationId: EspacioFisicoController.EspacioFisicoDependencia
+      parameters:
+      - in: query
+        name: dependencia
+        description: Id dependencia
+        required: true
+        type: integer
+        format: int64
+      responses:
+        "200":
+          description: '{}'
+        "404":
+          description: he request contains an incorrect parameter or no record exist
+  /espacio-fisico/disponibilidad:
+    get:
+      tags:
+      - espacio-fisico
+      description: Consulta la disponibilidad de un espacio fisico
+      operationId: EspacioFisicoController.DisponibilidadEspacioFisico
+      parameters:
+      - in: query
+        name: salon
+        description: Salon de las asignaciones
+        required: true
+        type: string
+      - in: query
+        name: vigencia
+        description: Vigencia de las asignaciones
+        required: true
+        type: string
+      - in: query
+        name: plan
+        description: Id del plan de trabajo
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{}'
+        "404":
+          description: he request contains an incorrect parameter or no record exist
+  /plan/:
+    get:
+      tags:
+      - plan
+      description: Traer la información de las asignaciones de un docente en la vigencia determinada
+      operationId: PlanController.PlanTrabajoDocenteAsignacion
+      parameters:
+      - in: query
+        name: docente
+        description: Id docente
+        required: true
+        type: string
+      - in: query
+        name: vigencia
+        description: Vigencia de las asignaciones
+        required: true
+        type: string
+      - in: query
+        name: vinculacion
+        description: Id vinculacion
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{}'
+        "404":
+          description: he request contains an incorrect parameter or no record exist
+    put:
+      tags:
+      - plan
+      description: Actualiza la información de los planes de trabajo
+      operationId: PlanController.DefinePlanTrabajoDocente
+      parameters:
+      - in: body
+        name: body
+        description: body plan a actualizar
+        required: true
+        schema:
+          $ref: '#/definitions/{}'
+      responses:
+        "200":
+          description: '{}'
+        "404":
+          description: he request contains an incorrect parameter or no record exist
+  /plan/copiar:
+    post:
+      tags:
+      - plan
+      description: Copia de plan de trabajo docente de una vigencia anterior
+      operationId: PlanController.CopiarPlanTrabajoDocente
+      parameters:
+      - in: body
+        name: body
+        description: body plan a copiar {docente,vigenciaAnterior,vigencia,vinculacion,carga(1,2) all number}
+        required: true
+        schema:
+          $ref: '#/definitions/{}'
+      responses:
+        "201":
+          description: '{}'
+        "400":
+          description: The request contains an incorrect data type or an invalid parameter
+        "404":
+          description: he request contains an incorrect parameter or no record exist
+  /plan/preaprobado:
+    get:
+      tags:
+      - plan
+      description: Listar planes que han sido aprobados en asignar ptd
+      operationId: PlanController.PlanPreaprobado
+      parameters:
+      - in: query
+        name: vigencia
+        description: Id periodo
+        required: true
+        type: integer
+        format: int64
+      - in: query
+        name: proyecto
+        description: Id proyecto
+        required: true
+        type: integer
+        format: int64
+      responses:
+        "200":
+          description: '{}'
+        "404":
+          description: he request contains an incorrect parameter or no record exist
+  /preasignacion/:
+    get:
+      tags:
+      - preasignacion
+      description: Listar todas las preasignaciones
+      operationId: PreasignacionController.Preasignacion
+      parameters:
+      - in: query
+        name: vigencia
+        description: Vigencia de las preasignaciones
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{}'
+        "404":
+          description: he request contains an incorrect parameter or no record exist
+  /preasignacion/aprobar:
+    put:
+      tags:
+      - preasignacion
+      description: Actualizar estado de la aprobación de la preasignación
+      operationId: PreasignacionController.Aprobar
+      parameters:
+      - in: body
+        name: body
+        description: body Actualizar preasignación plan docente
+        required: true
+        schema:
+          $ref: '#/definitions/{}'
+      responses:
+        "200":
+          description: '{}'
+        "400":
+          description: The request contains an incorrect data type or an invalid parameter
+  /preasignacion/docente:
+    get:
+      tags:
+      - preasignacion
+      description: Listar preasignaciones de un docente
+      operationId: PreasignacionController.PreasignacionDocente
+      parameters:
+      - in: query
+        name: docente
+        description: Id docente
+        required: true
+        type: string
+      - in: query
+        name: vigencia
+        description: Vigencia de las preasignaciones
+        required: true
+        type: string
+      responses:
+        "200":
+          description: '{}'
+        "404":
+          description: he request contains an incorrect parameter or no record exist
+  /reporte/plan-trabajo-docente:
+    get:
+      tags:
+      - reporte
+      description: Generar reporte excel de carga lectiva para docente
+      operationId: ReportesController.ReporteCargaLectiva
+      parameters:
+      - in: query
+        name: docente
+        description: Id de docente
+        required: true
+        type: integer
+        format: int64
+      - in: query
+        name: vinculacion
+        description: Id vinculacion
+        required: true
+        type: integer
+        format: int64
+      - in: query
+        name: periodo
+        description: Id periodo academico
+        required: true
+        type: integer
+        format: int64
+      - in: query
+        name: carga
+        description: 'Tipo carga: C) Carga lectiva, A) Actividades'
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Report Generation successful
+        "400":
+          description: The request contains an incorrect data type or an invalid parameter
+        "404":
+          description: he request contains an incorrect parameter or no record exist
+  /reporte/verificacion-cumplimiento-ptd:
+    get:
+      tags:
+      - reporte
+      description: Generar reporte excel de verificacion cumplimiento PTD
+      operationId: ReportesController.ReporteVerificacionCumplimientoPTD
+      parameters:
+      - in: query
+        name: vigencia
+        description: Id periodo academico
+        required: true
+        type: integer
+        format: int64
+      - in: query
+        name: proyecto
+        description: Id proyecto academico
+        type: integer
+        format: int64
+      responses:
+        "200":
+          description: Report Generation successful
+        "400":
+          description: The request contains an incorrect data type or an invalid parameter
+        "404":
+          description: he request contains an incorrect parameter or no record exist
+definitions:
+  '{}':
+    title: '{}'
+    type: object
+tags:
+- name: reporte
+  description: |
+    ReportesController operations for Reportes
+- name: preasignacion
+  description: |
+    PreasignacionController operations for Preasignacion
+- name: asignacion
+  description: |
+    AsignacionController operations for Asignacion
+- name: docente
+  description: |
+    DocenteController operations for Asignacion
+- name: espacio-fisico
+  description: |
+    EspacioFisicoController operations for Asignacion
+- name: espacio-academico
+  description: |
+    EspacioAcademicoController operations for Asignacion
+- name: plan
+  description: |
+    PlanController operations for Asignacion
