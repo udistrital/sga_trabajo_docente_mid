@@ -5,7 +5,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/udistrital/sga_plan_trabajo_docente_mid/services"
 	"github.com/udistrital/utils_oas/errorhandler"
-	"github.com/udistrital/utils_oas/requestresponse"
+	requestmanager "github.com/udistrital/utils_oas/requestresponse"
 )
 
 // EspacioFisicoController operations for Asignacion
@@ -32,11 +32,11 @@ func (c *EspacioFisicoController) EspacioFisicoDependencia() {
 	dependencia, errdep := c.GetInt64("dependencia")
 	if errdep != nil {
 		logs.Error(errdep)
-		c.Data["json"] = requestresponse.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
 		c.Ctx.Output.SetStatus(400)
 	} else if dependencia <= 0 {
 		logs.Error(dependencia)
-		c.Data["json"] = requestresponse.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
 		c.Ctx.Output.SetStatus(400)
 	} else {
 		resultado := services.ArbolEspaciosFisicosDependencia(dependencia)
@@ -58,6 +58,20 @@ func (c *EspacioFisicoController) EspacioFisicoDependencia() {
 // @router /disponibilidad [get]
 func (c *EspacioFisicoController) DisponibilidadEspacioFisico() {
 	defer errorhandler.HandlePanic(&c.Controller)
+
+	salon := c.GetString("salon")
+	vigencia := c.GetString("vigencia")
+	plan := c.GetString("plan")
+
+	if salon == "" || vigencia == "" || plan == "" {
+		logs.Error(salon, vigencia, plan)
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Ctx.Output.SetStatus(400)
+	} else {
+		resultado := services.OcupacionEspacioFisico(salon, vigencia, plan)
+		c.Data["json"] = resultado
+		c.Ctx.Output.SetStatus(resultado.Status)
+	}
 
 	c.ServeJSON()
 }

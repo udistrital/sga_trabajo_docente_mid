@@ -185,20 +185,25 @@ paths:
         name: docente
         description: Id docente
         required: true
-        type: string
+        type: integer
+        format: int64
       - in: query
         name: vigencia
         description: Vigencia de las asignaciones
         required: true
-        type: string
+        type: integer
+        format: int64
       - in: query
         name: vinculacion
         description: Id vinculacion
         required: true
-        type: string
+        type: integer
+        format: int64
       responses:
         "200":
           description: '{}'
+        "400":
+          description: The request contains an incorrect data type or an invalid parameter
         "404":
           description: he request contains an incorrect parameter or no record exist
     put:
@@ -217,22 +222,46 @@ paths:
         "200":
           description: '{}'
         "404":
-          description: he request contains an incorrect parameter or no record exist
+          description: the request contains an incorrect parameter or no record exist
   /plan/copiar:
-    post:
+    get:
       tags:
       - plan
       description: Copia de plan de trabajo docente de una vigencia anterior
       operationId: PlanController.CopiarPlanTrabajoDocente
       parameters:
-      - in: body
-        name: body
-        description: body plan a copiar {docente,vigenciaAnterior,vigencia,vinculacion,carga(1,2) all number}
+      - in: query
+        name: docente
+        description: Id docente
         required: true
-        schema:
-          $ref: '#/definitions/{}'
+        type: integer
+        format: int64
+      - in: query
+        name: vigenciaAnterior
+        description: Vigencia de la cual se pretende hacer copia
+        required: true
+        type: integer
+        format: int64
+      - in: query
+        name: vigencia
+        description: Vigencia actual para encontrar diferencias
+        required: true
+        type: integer
+        format: int64
+      - in: query
+        name: vinculacion
+        description: Id vinculacion
+        required: true
+        type: integer
+        format: int64
+      - in: query
+        name: carga
+        description: Carga Lectiva 1, Actividades 2
+        required: true
+        type: integer
+        format: int64
       responses:
-        "201":
+        "200":
           description: '{}'
         "400":
           description: The request contains an incorrect data type or an invalid parameter

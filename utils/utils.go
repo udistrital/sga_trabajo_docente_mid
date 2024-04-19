@@ -41,7 +41,7 @@ func CheckIdString(param string) (string, error) {
 	}
 }
 
-// Formatea data en base a modelo de datos; ver en ~/models/data
+// Formatea data en base a modelo de datos; ver en ~/models
 //   - data: data en interface{}
 //   - &tipo: variable con tipo de dato especificado (no olvide "&")
 //
@@ -56,6 +56,11 @@ func ParseData(data interface{}, tipo interface{}) {
 	}
 }
 
+// Formatea nombre completo de tercero como nombre1 nombre2 apellido1 apellido2
+//   - tercero: registro de tercero
+//
+// Retorna:
+//   - string con nombre completo
 func FormatNameTercero(tercero models.Tercero) string {
 	nombreFormateado := ""
 	if tercero.PrimerNombre != "" {
@@ -83,6 +88,16 @@ func FormatNameTercero(tercero models.Tercero) string {
 		}
 	}
 	return strings.Trim(nombreFormateado, " ")
+}
+
+// Formatea cualquier texto a primera letra mayúscula
+//   - badString: texto cualquiera
+//
+// Retorna:
+//   - string capitalizado
+func Capitalize(badString string) string {
+	str := strings.ToLower(badString)
+	return strings.ToUpper(str[0:1]) + str[1:]
 }
 
 // Une lo que hay igual en dos arreglos, tomado como referencia el primero
@@ -177,4 +192,15 @@ func RemoveDuplicated(A interface{}, compare func(item interface{}) interface{})
 		}
 	}
 	return unicos
+}
+
+// SplitTrimSpace use Split function to slices s into all substrings separated
+// by sep and use TrimSpace to remove space and return a slice of the substrings.
+func SplitTrimSpace(s, sep string) []string {
+	substrings := strings.Split(s, sep)
+
+	for i, elementString := range substrings {
+		substrings[i] = strings.TrimSpace(elementString)
+	}
+	return substrings
 }

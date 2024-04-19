@@ -5,7 +5,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/udistrital/sga_plan_trabajo_docente_mid/services"
 	"github.com/udistrital/utils_oas/errorhandler"
-	"github.com/udistrital/utils_oas/requestresponse"
+	requestmanager "github.com/udistrital/utils_oas/requestresponse"
 )
 
 // ReportesController operations for Reportes
@@ -40,11 +40,11 @@ func (c *ReportesController) ReporteCargaLectiva() {
 
 	if errdoc != nil || errvin != nil || errper != nil || carga == "" {
 		logs.Error(errdoc, errvin, errper, carga)
-		c.Data["json"] = requestresponse.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
 		c.Ctx.Output.SetStatus(400)
 	} else if docente <= 0 || vinculacion <= 0 || periodo <= 0 || carga != "C" && carga != "A" {
 		logs.Error(docente, vinculacion, periodo, carga)
-		c.Data["json"] = requestresponse.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
 		c.Ctx.Output.SetStatus(400)
 	} else {
 		resultado := services.RepCargaLectiva(docente, vinculacion, periodo, carga)
@@ -72,11 +72,11 @@ func (c *ReportesController) ReporteVerificacionCumplimientoPTD() {
 
 	if errvig != nil {
 		logs.Error(errvig)
-		c.Data["json"] = requestresponse.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
 		c.Ctx.Output.SetStatus(400)
 	} else if vigencia <= 0 {
 		logs.Error(vigencia, proyecto)
-		c.Data["json"] = requestresponse.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
 	} else {
 		resultado := services.RepCumplimiento(vigencia, proyecto)
 		c.Data["json"] = resultado

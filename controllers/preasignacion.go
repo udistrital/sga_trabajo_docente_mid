@@ -1,8 +1,13 @@
 package controllers
 
 import (
+	"encoding/json"
+
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
+	"github.com/udistrital/sga_plan_trabajo_docente_mid/services"
 	"github.com/udistrital/utils_oas/errorhandler"
+	requestmanager "github.com/udistrital/utils_oas/requestresponse"
 )
 
 // PreasignacionController operations for Preasignacion
@@ -27,6 +32,17 @@ func (c *PreasignacionController) URLMapping() {
 func (c *PreasignacionController) Preasignacion() {
 	defer errorhandler.HandlePanic(&c.Controller)
 
+	vigencia := c.GetString("vigencia")
+
+	if vigencia == "" {
+		logs.Error(vigencia)
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+	} else {
+		resultado := services.ListaPreasignacion(vigencia)
+		c.Data["json"] = resultado
+		c.Ctx.Output.SetStatus(resultado.Status)
+	}
+
 	c.ServeJSON()
 }
 
@@ -41,6 +57,18 @@ func (c *PreasignacionController) Preasignacion() {
 func (c *PreasignacionController) PreasignacionDocente() {
 	defer errorhandler.HandlePanic(&c.Controller)
 
+	docente := c.GetString("docente")
+	vigencia := c.GetString("vigencia")
+
+	if docente == "" || vigencia == "" {
+		logs.Error(docente, vigencia)
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+	} else {
+		resultado := services.ListaPreasignacionDocente(docente, vigencia)
+		c.Data["json"] = resultado
+		c.Ctx.Output.SetStatus(resultado.Status)
+	}
+
 	c.ServeJSON()
 }
 
@@ -53,6 +81,32 @@ func (c *PreasignacionController) PreasignacionDocente() {
 // @router /aprobar [put]
 func (c *PreasignacionController) Aprobar() {
 	defer errorhandler.HandlePanic(&c.Controller)
+
+	var body map[string]interface{}
+	err := json.Unmarshal(c.Ctx.Input.RequestBody, &body)
+	if err != nil {
+		logs.Error(err)
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Ctx.Output.SetStatus(400)
+	}
+
+	params := []string{"preasignaciones", "no-preasignaciones", "docente"}
+	errParam := false
+	for _, param := range params {
+		if _, ok := body[param]; !ok {
+			errParam = true
+			logs.Error("No existe el parametro %s", param)
+			break
+		}
+	}
+	if errParam {
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Ctx.Output.SetStatus(400)
+	} else {
+		resultado := services.DefinePreasignacion(body)
+		c.Data["json"] = resultado
+		c.Ctx.Output.SetStatus(resultado.Status)
+	}
 
 	c.ServeJSON()
 }

@@ -1,14 +1,17 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
+	request "github.com/udistrital/utils_oas/request"
 	requestmanager "github.com/udistrital/utils_oas/requestresponse"
 )
 
+// EspacioFisicoDependencia ...
 func ArbolEspaciosFisicosDependencia(dependencia int64) requestmanager.APIResponse {
 	inBog, _ := time.LoadLocation("America/Bogota")
 	horaes := time.Now().In(inBog).Format(time.RFC3339)
@@ -152,4 +155,50 @@ func ArbolEspaciosFisicosDependencia(dependencia int64) requestmanager.APIRespon
 		"Sedes":     Sedes,
 	})
 
+}
+
+// DisponibilidadEspacioFisico ...
+func OcupacionEspacioFisico(salon, vigencia, plan string) requestmanager.APIResponse {
+	var planTrabajoDocente map[string]interface{}
+	var cargaPlan map[string]interface{}
+	var colocacion map[string]interface{}
+	var cargas []map[string]interface{}
+	var errorGetAll bool
+
+	if errGetPlan := request.GetJson("http://"+beego.AppConfig.String("PlanTrabajoDocenteService")+"plan_docente?query=activo:true,periodo_id:"+vigencia+"&fields=_id", &planTrabajoDocente); errGetPlan == nil {
+		if fmt.Sprintf("%v", planTrabajoDocente["Data"]) != "[]" {
+			planes := planTrabajoDocente["Data"].([]interface{})
+			for _, plan := range planes {
+				if errGetCargas := request.GetJson("http://"+beego.AppConfig.String("PlanTrabajoDocenteService")+"carga_plan?query=activo:true,salon_id:"+salon+",plan_docente_id:"+plan.(map[string]interface{})["_id"].(string)+"&fields=horario,plan_docente_id,colocacion_espacio_academico_id", &cargaPlan); errGetCargas == nil {
+					if fmt.Sprintf("%v", cargaPlan["Data"]) != "[]" {
+						for _, carga := range cargaPlan["Data"].([]interface{}) {
+							if carga.(map[string]interface{})["plan_docente_id"] != plan {
+								if colId, colExists := carga.(map[string]interface{})["colocacion_espacio_academico_id"]; colExists {
+									var horarioJSON map[string]interface{}
+									if errGetColocacion := request.GetJson("http://"+beego.AppConfig.String("HorarioService")+"colocacion_espacio_academico/"+colId.(string), &colocacion); errGetColocacion == nil {
+										if colocacion["Success"].(bool) {
+											json.Unmarshal([]byte(colocacion["Data"].(map[string]interface{})["ColocacionEspacioAcademico"].(string)), &horarioJSON)
+											cargas = append(cargas, map[string]interface{}{
+												"finalPosition": horarioJSON["finalPosition"],
+												"horas":         horarioJSON["horas"],
+												"id":            carga.(map[string]interface{})["_id"],
+											})
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		} else {
+			return requestmanager.APIResponseDTO(false, 404, nil, "No hay planes de trabajo docente para la vigencia seleccionada")
+		}
+	}
+
+	if errorGetAll {
+		return requestmanager.APIResponseDTO(false, 404, nil, "No hay planes de trabajo docente para la vigencia seleccionada")
+	} else {
+		return requestmanager.APIResponseDTO(true, 200, cargas)
+	}
 }

@@ -2,7 +2,10 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
+	"github.com/udistrital/sga_plan_trabajo_docente_mid/services"
 	"github.com/udistrital/utils_oas/errorhandler"
+	requestmanager "github.com/udistrital/utils_oas/requestresponse"
 )
 
 // EspacioAcademicoController operations for Asignacion
@@ -27,6 +30,19 @@ func (c *EspacioAcademicoController) URLMapping() {
 func (c *EspacioAcademicoController) GrupoEspacioAcademico() {
 	defer errorhandler.HandlePanic(&c.Controller)
 
+	padre := c.GetString("padre")
+	vigencia := c.GetString("vigencia")
+
+	if padre == "" || vigencia == "" {
+		logs.Error(padre, vigencia)
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Ctx.Output.SetStatus(400)
+	} else {
+		resultado := services.ListaGruposEspaciosAcademicos(padre, vigencia)
+		c.Data["json"] = resultado
+		c.Ctx.Output.SetStatus(resultado.Status)
+	}
+
 	c.ServeJSON()
 }
 
@@ -39,6 +55,18 @@ func (c *EspacioAcademicoController) GrupoEspacioAcademico() {
 // @router /grupo-padre [get]
 func (c *EspacioAcademicoController) GrupoEspacioAcademicoPadre() {
 	defer errorhandler.HandlePanic(&c.Controller)
+
+	padre := c.GetString("padre")
+
+	if padre == "" {
+		logs.Error(padre)
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Ctx.Output.SetStatus(400)
+	} else {
+		resultado := services.ListaGruposEspaciosAcademicosPadre(padre)
+		c.Data["json"] = resultado
+		c.Ctx.Output.SetStatus(resultado.Status)
+	}
 
 	c.ServeJSON()
 }
