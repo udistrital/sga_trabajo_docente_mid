@@ -343,7 +343,7 @@ func consultarDetallePlan(planes []interface{}, idVinculacion int64) map[string]
 			if err == nil {
 				for _, preasign := range resp.([]interface{}) {
 					if planes[0].(map[string]interface{})["docente_id"] != preasign.(map[string]interface{})["docente_id"] {
-						relatedPlans = append(relatedPlans, fmt.Sprintf("%v/%v/%v", preasign.(map[string]interface{})["docente_id"], planes[0].(map[string]interface{})["periodo_id"], preasign.(map[string]interface{})["tipo_vinculacion_id"]))
+						relatedPlans = append(relatedPlans, fmt.Sprintf("?docente=%v&vigencia=%v&vinculacion=%v", preasign.(map[string]interface{})["docente_id"], planes[0].(map[string]interface{})["periodo_id"], preasign.(map[string]interface{})["tipo_vinculacion_id"]))
 					}
 				}
 			}

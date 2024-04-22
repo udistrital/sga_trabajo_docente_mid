@@ -96,6 +96,9 @@ func FormatNameTercero(tercero models.Tercero) string {
 // Retorna:
 //   - string capitalizado
 func Capitalize(badString string) string {
+	if badString == "" {
+		return ""
+	}
 	str := strings.ToLower(badString)
 	return strings.ToUpper(str[0:1]) + str[1:]
 }
