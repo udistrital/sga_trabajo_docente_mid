@@ -36,7 +36,7 @@ func (c *PreasignacionController) Preasignacion() {
 
 	if vigencia == "" {
 		logs.Error(vigencia)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos")
 	} else {
 		resultado := services.ListaPreasignacion(vigencia)
 		c.Data["json"] = resultado
@@ -62,7 +62,7 @@ func (c *PreasignacionController) PreasignacionDocente() {
 
 	if docente == "" || vigencia == "" {
 		logs.Error(docente, vigencia)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos")
 	} else {
 		resultado := services.ListaPreasignacionDocente(docente, vigencia)
 		c.Data["json"] = resultado
@@ -86,7 +86,7 @@ func (c *PreasignacionController) Aprobar() {
 	err := json.Unmarshal(c.Ctx.Input.RequestBody, &body)
 	if err != nil {
 		logs.Error(err)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) no válido(s) o faltante(s)")
 		c.Ctx.Output.SetStatus(400)
 	}
 
@@ -100,7 +100,7 @@ func (c *PreasignacionController) Aprobar() {
 		}
 	}
 	if errParam {
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) no válido(s) o faltante(s)")
 		c.Ctx.Output.SetStatus(400)
 	} else {
 		resultado := services.DefinePreasignacion(body)

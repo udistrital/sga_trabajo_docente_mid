@@ -33,7 +33,7 @@ func (c *AsignacionController) Asignacion() {
 
 	if vigencia == "" {
 		logs.Error(vigencia)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos")
 	} else {
 		resultado := services.ListaAsignacion(vigencia)
 		c.Data["json"] = resultado
@@ -59,7 +59,7 @@ func (c *AsignacionController) AsignacionDocente() {
 
 	if docente == "" || vigencia == "" {
 		logs.Error(docente, vigencia)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos")
 	} else {
 		resultado := services.ListaAsignacionDocente(docente, vigencia)
 		c.Data["json"] = resultado

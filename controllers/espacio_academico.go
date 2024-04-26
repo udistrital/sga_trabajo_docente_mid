@@ -35,7 +35,7 @@ func (c *EspacioAcademicoController) GrupoEspacioAcademico() {
 
 	if padre == "" || vigencia == "" {
 		logs.Error(padre, vigencia)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos")
 		c.Ctx.Output.SetStatus(400)
 	} else {
 		resultado := services.ListaGruposEspaciosAcademicos(padre, vigencia)
@@ -60,7 +60,7 @@ func (c *EspacioAcademicoController) GrupoEspacioAcademicoPadre() {
 
 	if padre == "" {
 		logs.Error(padre)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos")
 		c.Ctx.Output.SetStatus(400)
 	} else {
 		resultado := services.ListaGruposEspaciosAcademicosPadre(padre)

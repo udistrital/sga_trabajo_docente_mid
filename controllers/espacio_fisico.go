@@ -32,11 +32,11 @@ func (c *EspacioFisicoController) EspacioFisicoDependencia() {
 	dependencia, errdep := c.GetInt64("dependencia")
 	if errdep != nil {
 		logs.Error(errdep)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) no válido(s) o faltante(s)")
 		c.Ctx.Output.SetStatus(400)
 	} else if dependencia <= 0 {
 		logs.Error(dependencia)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos")
 		c.Ctx.Output.SetStatus(400)
 	} else {
 		resultado := services.ArbolEspaciosFisicosDependencia(dependencia)
@@ -65,7 +65,7 @@ func (c *EspacioFisicoController) DisponibilidadEspacioFisico() {
 
 	if salon == "" || vigencia == "" || plan == "" {
 		logs.Error(salon, vigencia, plan)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos")
 		c.Ctx.Output.SetStatus(400)
 	} else {
 		resultado := services.OcupacionEspacioFisico(salon, vigencia, plan)

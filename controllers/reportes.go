@@ -40,11 +40,11 @@ func (c *ReportesController) ReporteCargaLectiva() {
 
 	if errdoc != nil || errvin != nil || errper != nil || carga == "" {
 		logs.Error(errdoc, errvin, errper, carga)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) no válido(s) o faltante(s)")
 		c.Ctx.Output.SetStatus(400)
 	} else if docente <= 0 || vinculacion <= 0 || periodo <= 0 || carga != "C" && carga != "A" {
 		logs.Error(docente, vinculacion, periodo, carga)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos")
 		c.Ctx.Output.SetStatus(400)
 	} else {
 		resultado := services.RepCargaLectiva(docente, vinculacion, periodo, carga)
@@ -72,11 +72,11 @@ func (c *ReportesController) ReporteVerificacionCumplimientoPTD() {
 
 	if errvig != nil {
 		logs.Error(errvig)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) no válido(s) o faltante(s)")
 		c.Ctx.Output.SetStatus(400)
 	} else if vigencia <= 0 {
 		logs.Error(vigencia, proyecto)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos")
 	} else {
 		resultado := services.RepCumplimiento(vigencia, proyecto)
 		c.Data["json"] = resultado

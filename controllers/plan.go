@@ -37,7 +37,7 @@ func (c *PlanController) DefinePlanTrabajoDocente() {
 	err := json.Unmarshal(c.Ctx.Input.RequestBody, &body)
 	if err != nil {
 		logs.Error(err)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) no válido(s) o faltante(s)")
 		c.Ctx.Output.SetStatus(400)
 	}
 
@@ -51,7 +51,7 @@ func (c *PlanController) DefinePlanTrabajoDocente() {
 		}
 	}
 	if errParam {
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) no válido(s) o faltante(s)")
 		c.Ctx.Output.SetStatus(400)
 	} else {
 		resultado := services.DefinePTD(body)
@@ -81,11 +81,11 @@ func (c *PlanController) PlanTrabajoDocenteAsignacion() {
 
 	if errdoc != nil || errvig != nil || errvin != nil {
 		logs.Error(errdoc, errvig, errvin)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) no válido(s) o faltante(s)")
 		c.Ctx.Output.SetStatus(400)
 	} else if docente <= 0 || vigencia <= 0 || vinculacion <= 0 {
 		logs.Error(docente, vigencia, vinculacion)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos")
 		c.Ctx.Output.SetStatus(400)
 	} else {
 		resultado := services.PlanTrabajoDocente(docente, vigencia, vinculacion)
@@ -119,11 +119,11 @@ func (c *PlanController) CopiarPlanTrabajoDocente() {
 
 	if errdoc != nil || errvigA != nil || errvig != nil || errvin != nil || errcar != nil {
 		logs.Error(errdoc, errvigA, errvig, errvin, errcar)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) no válido(s) o faltante(s)")
 		c.Ctx.Output.SetStatus(400)
 	} else if docente <= 0 || vigenciaAnterior <= 0 || vigencia <= 0 || vinculacion <= 0 || carga != 1 && carga != 2 {
 		logs.Error(docente, vigenciaAnterior, vigencia, vinculacion, carga)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos")
 		c.Ctx.Output.SetStatus(400)
 	} else {
 		resultado := services.CopiarPTD(docente, vigenciaAnterior, vigencia, vinculacion, carga)
@@ -150,11 +150,11 @@ func (c *PlanController) PlanPreaprobado() {
 
 	if errvig != nil || errpro != nil {
 		logs.Error(errvig, errpro)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) no válido(s) o faltante(s)")
 		c.Ctx.Output.SetStatus(400)
 	} else if vigencia <= 0 || proyecto <= 0 {
 		logs.Error(vigencia, proyecto)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos")
 		c.Ctx.Output.SetStatus(400)
 	} else {
 		resultado := services.ListaPlanPreaprobado(vigencia, proyecto)

@@ -35,11 +35,11 @@ func (c *DocenteController) DocumentoDocenteVinculacion() {
 
 	if errvin != nil {
 		logs.Error(errvin)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) no válido(s) o faltante(s)")
 		c.Ctx.Output.SetStatus(400)
 	} else if documento == "" || vinculacion <= 0 {
 		logs.Error(documento, vinculacion)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos")
 		c.Ctx.Output.SetStatus(400)
 	} else {
 		resultado := services.ListaDocentesxDocumentoVinculacion(documento, vinculacion)
@@ -66,11 +66,11 @@ func (c *DocenteController) NombreDocenteVinculacion() {
 
 	if errvin != nil {
 		logs.Error(errvin)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) nó valido(s) o faltante(s)")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) no válido(s) o faltante(s)")
 		c.Ctx.Output.SetStatus(400)
 	} else if nombre == "" || vinculacion <= 0 {
 		logs.Error(nombre, vinculacion)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parametro(s) Valores nó validos")
+		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos")
 		c.Ctx.Output.SetStatus(400)
 	} else {
 		resultado := services.ListaDocentesxNombreVinculacion(nombre, vinculacion)

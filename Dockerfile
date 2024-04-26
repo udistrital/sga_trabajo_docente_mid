@@ -1,8 +1,5 @@
 FROM python:3
 
-RUN apt-get update
-RUN apt-get install libmcrypt-dev -y # TODO: revisar si se necesita
-
 RUN pip install awscli
 WORKDIR /
 COPY entrypoint.sh entrypoint.sh
