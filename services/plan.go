@@ -56,7 +56,7 @@ func DefinePTD(body map[string]interface{}) requestmanager.APIResponse {
 		}
 
 		if carga.(map[string]interface{})["id"] == nil {
-			if errPostPlacement := request.SendJson("http://"+beego.AppConfig.String("HorarioService")+"colocacion_espacio_academico/",
+			if errPostPlacement := request.SendJson("http://"+beego.AppConfig.String("HorarioService")+"colocacion-espacio-academico/",
 				"POST", &resColocacion, bodyColocacion); errPostPlacement == nil {
 				if resColocacion["Success"].(bool) {
 					bodyCarga["colocacion_espacio_academico_id"] = resColocacion["Data"].(map[string]interface{})["Id"]
@@ -77,7 +77,7 @@ func DefinePTD(body map[string]interface{}) requestmanager.APIResponse {
 			if errPlanTrabajo := request.GetJson("http://"+beego.AppConfig.String("PlanTrabajoDocenteService")+"carga_plan/"+carga.(map[string]interface{})["id"].(string), &planTrabajoData); errPlanTrabajo == nil {
 				if planTrabajoData["Success"].(bool) {
 					if colId, colExists := planTrabajoData["Data"].(map[string]interface{})["colocacion_espacio_academico_id"]; colExists {
-						if errPutColocacion := request.SendJson("http://"+beego.AppConfig.String("HorarioService")+"colocacion_espacio_academico/"+colId.(string),
+						if errPutColocacion := request.SendJson("http://"+beego.AppConfig.String("HorarioService")+"colocacion-espacio-academico/"+colId.(string),
 							"PUT", &resColocacion, bodyColocacion); errPutColocacion == nil {
 							if resColocacion["Success"].(bool) {
 								bodyCarga["colocacion_espacio_academico_id"] = resColocacion["Data"].(map[string]interface{})["Id"]
@@ -94,7 +94,7 @@ func DefinePTD(body map[string]interface{}) requestmanager.APIResponse {
 							}
 						}
 					} else {
-						if errPutColocacion := request.SendJson("http://"+beego.AppConfig.String("HorarioService")+"colocacion_espacio_academico/",
+						if errPutColocacion := request.SendJson("http://"+beego.AppConfig.String("HorarioService")+"colocacion-espacio-academico/",
 							"POST", &resColocacion, bodyColocacion); errPutColocacion == nil {
 							if resColocacion["Success"].(bool) {
 								bodyCarga["colocacion_espacio_academico_id"] = resColocacion["Data"].(map[string]interface{})["Id"]
@@ -238,48 +238,51 @@ func consultarDetallePlan(planes []interface{}, idVinculacion int64) map[string]
 					var salonId string
 
 					if colId, colExists := carga.(map[string]interface{})["colocacion_espacio_academico_id"]; colExists {
-						if errColocacion := request.GetJson("http://"+beego.AppConfig.String("HorarioService")+"colocacion_espacio_academico/"+colId.(string), &resColocacion); errColocacion == nil {
-							json.Unmarshal([]byte(resColocacion["Data"].(map[string]interface{})["ColocacionEspacioAcademico"].(string)), &horarioJSON)
-							json.Unmarshal([]byte(resColocacion["Data"].(map[string]interface{})["ResumenColocacionEspacioFisico"].(string)), &resumenColocacion)
-							sedeId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["sede_id"])
-							edificioId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["edificio_id"])
-							salonId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["salon_id"])
+						if errColocacion := request.GetJson("http://"+beego.AppConfig.String("HorarioService")+"colocacion-espacio-academico/"+colId.(string), &resColocacion); errColocacion == nil {
+							if resColocacion["Success"].(bool) {
+								json.Unmarshal([]byte(resColocacion["Data"].(map[string]interface{})["ColocacionEspacioAcademico"].(string)), &horarioJSON)
+								json.Unmarshal([]byte(resColocacion["Data"].(map[string]interface{})["ResumenColocacionEspacioFisico"].(string)), &resumenColocacion)
+								sedeId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["sede_id"])
+								edificioId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["edificio_id"])
+								salonId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["salon_id"])
 
-							cargaDetalle := map[string]interface{}{
-								"id":      carga.(map[string]interface{})["_id"].(string),
-								"horario": horarioJSON,
-							}
-							if sedeId != "-" {
-								if errSede := request.GetJson("http://"+beego.AppConfig.String("OikosService")+"espacio_fisico?query=Id:"+sedeId+"&fields=Id,Nombre,CodigoAbreviacion", &sede); errSede == nil {
-									cargaDetalle["sede"] = sede[0]
+								cargaDetalle := map[string]interface{}{
+									"id":      carga.(map[string]interface{})["_id"].(string),
+									"horario": horarioJSON,
 								}
-							} else {
-								cargaDetalle["sede"] = "-"
-							}
-
-							if edificioId != "-" {
-								if errEdificio := request.GetJson("http://"+beego.AppConfig.String("OikosService")+"espacio_fisico/"+edificioId, &edificio); errEdificio == nil {
-									cargaDetalle["edificio"] = edificio
+								if sedeId != "-" {
+									if errSede := request.GetJson("http://"+beego.AppConfig.String("OikosService")+"espacio_fisico?query=Id:"+sedeId+"&fields=Id,Nombre,CodigoAbreviacion", &sede); errSede == nil {
+										cargaDetalle["sede"] = sede[0]
+									}
+								} else {
+									cargaDetalle["sede"] = "-"
 								}
-							} else {
-								cargaDetalle["edificio"] = "-"
-							}
 
-							if salonId != "-" {
-								if errSalon := request.GetJson("http://"+beego.AppConfig.String("OikosService")+"espacio_fisico/"+salonId, &salon); errSalon == nil {
-									cargaDetalle["salon"] = salon
+								if edificioId != "-" {
+									if errEdificio := request.GetJson("http://"+beego.AppConfig.String("OikosService")+"espacio_fisico/"+edificioId, &edificio); errEdificio == nil {
+										cargaDetalle["edificio"] = edificio
+									}
+								} else {
+									cargaDetalle["edificio"] = "-"
 								}
-							} else {
-								cargaDetalle["salon"] = "-"
+
+								if salonId != "-" {
+									if errSalon := request.GetJson("http://"+beego.AppConfig.String("OikosService")+"espacio_fisico/"+salonId, &salon); errSalon == nil {
+										cargaDetalle["salon"] = salon
+									}
+								} else {
+									cargaDetalle["salon"] = "-"
+								}
+
+								cargaPlan = append(cargaPlan, cargaDetalle)
+
+								if carga.(map[string]interface{})["actividad_id"] != nil {
+									cargaPlan[len(cargaPlan)-1].(map[string]interface{})["actividad_id"] = carga.(map[string]interface{})["actividad_id"].(string)
+								} else {
+									cargaPlan[len(cargaPlan)-1].(map[string]interface{})["espacio_academico_id"] = carga.(map[string]interface{})["espacio_academico_id"].(string)
+								}
 							}
 
-							cargaPlan = append(cargaPlan, cargaDetalle)
-
-							if carga.(map[string]interface{})["actividad_id"] != nil {
-								cargaPlan[len(cargaPlan)-1].(map[string]interface{})["actividad_id"] = carga.(map[string]interface{})["actividad_id"].(string)
-							} else {
-								cargaPlan[len(cargaPlan)-1].(map[string]interface{})["espacio_academico_id"] = carga.(map[string]interface{})["espacio_academico_id"].(string)
-							}
 						}
 					}
 				}
@@ -468,7 +471,7 @@ func obtenerCargaLectiva(docente, vigenciaAnterior, vigencia, vinculacion int64,
 			if carga.Horario == "" && carga.Colocacion_espacio_academico_id != "" {
 				var colocacion map[string]interface{}
 				if errGetColocacion := request.GetJson("http://"+beego.AppConfig.String("HorarioService")+
-					"colocacion_espacio_academico/"+carga.Colocacion_espacio_academico_id, &colocacion); errGetColocacion == nil {
+					"colocacion-espacio-academico/"+carga.Colocacion_espacio_academico_id, &colocacion); errGetColocacion == nil {
 					if colocacion["Success"].(bool) {
 						var resumenColocacionJSON map[string]interface{}
 						json.Unmarshal([]byte(colocacion["Data"].(map[string]interface{})["ResumenColocacionEspacioFisico"].(string)), &resumenColocacionJSON)
@@ -566,7 +569,7 @@ func obtenerCargaActividades(carga_planAnterior []models.CargaPlan) (map[string]
 		if carga.Horario == "" && carga.Colocacion_espacio_academico_id != "" {
 			var colocacion map[string]interface{}
 			if errGetColocacion := request.GetJson("http://"+beego.AppConfig.String("HorarioService")+
-				"colocacion_espacio_academico/"+carga.Colocacion_espacio_academico_id, &colocacion); errGetColocacion == nil {
+				"colocacion-espacio-academico/"+carga.Colocacion_espacio_academico_id, &colocacion); errGetColocacion == nil {
 				if colocacion["Success"].(bool) {
 					var resumenColocacionJSON map[string]interface{}
 					json.Unmarshal([]byte(colocacion["Data"].(map[string]interface{})["ResumenColocacionEspacioFisico"].(string)), &resumenColocacionJSON)
