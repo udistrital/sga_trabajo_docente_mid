@@ -133,27 +133,23 @@ func obtenerInformacionRequeridaRepCargaLectiva(docente, vinculacion, periodo in
 
 	for i := 0; i < len(datosCargaPlan); i++ {
 		resp, err := requestmanager.Get("http://"+beego.AppConfig.String("HorarioService")+
-			fmt.Sprintf("colocacion_espacio_academico/%s", datosCargaPlan[i].Colocacion_espacio_academico_id), requestmanager.ParseResponseFormato1)
+			fmt.Sprintf("colocacion-espacio-academico/%s", datosCargaPlan[i].Colocacion_espacio_academico_id), requestmanager.ParseResponseFormato1)
 		if err != nil {
 			logs.Error(err)
 			return infoRequeridaRepCL{}, fmt.Errorf("HorarioService (colocacion_espacio_academico): " + err.Error())
-			/* badAns, code := requestmanager.MidResponseFormat("HorarioService (colocacion_espacio_academico)", "GET", false, map[string]interface{}{
-				"response": resp,
-				"error":    err.Error(),
-			})
-			c.Ctx.Output.SetStatus(code)
-			c.Data["json"] = badAns
-			c.ServeJSON()
-			return */
+		}
+		if resp.(map[string]interface{})["Success"].(bool) {
+			resumenColocacion := models.ResumenColocacion{}
+			json.Unmarshal([]byte(resp.(map[string]interface{})["ResumenColocacionEspacioFisico"].(string)), &resumenColocacion)
+
+			datosCargaPlan[i].Horario = resumenColocacion.Colocacion
+			datosCargaPlan[i].Sede_id = fmt.Sprint(resumenColocacion.EspacioFisico.SedeId)
+			datosCargaPlan[i].Edificio_id = fmt.Sprint(resumenColocacion.EspacioFisico.EdificioId)
+			datosCargaPlan[i].Salon_id = fmt.Sprint(resumenColocacion.EspacioFisico.SalonId)
+		} else {
+			return infoRequeridaRepCL{}, fmt.Errorf("HorarioService (colocacion_espacio_academico): " + resp.(map[string]interface{})["Message"].(string))
 		}
 
-		resumenColocacion := models.ResumenColocacion{}
-		json.Unmarshal([]byte(resp.(map[string]interface{})["ResumenColocacionEspacioFisico"].(string)), &resumenColocacion)
-
-		datosCargaPlan[i].Horario = resumenColocacion.Colocacion
-		datosCargaPlan[i].Sede_id = fmt.Sprint(resumenColocacion.EspacioFisico.SedeId)
-		datosCargaPlan[i].Edificio_id = fmt.Sprint(resumenColocacion.EspacioFisico.EdificioId)
-		datosCargaPlan[i].Salon_id = fmt.Sprint(resumenColocacion.EspacioFisico.SalonId)
 	}
 
 	return infoRequeridaRepCL{datoIdenfTercero, datoVinculacion, datoPeriodo, datoPlanDocente, datoResumen, datosCargaPlan}, nil
