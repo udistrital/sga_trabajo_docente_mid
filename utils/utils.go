@@ -207,3 +207,21 @@ func SplitTrimSpace(s, sep string) []string {
 	}
 	return substrings
 }
+
+func GetOrDefault(value interface{}, defaultValue interface{}) interface{} {
+	if value == nil {
+		return defaultValue
+	}
+	switch v := value.(type) {
+	case string:
+		if v == "" {
+			return defaultValue
+		}
+	case int:
+		if v == 0 {
+			return defaultValue
+		}
+		// Añadir más tipos según sea necesario
+	}
+	return value
+}
