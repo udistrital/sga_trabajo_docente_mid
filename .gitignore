@@ -2,6 +2,7 @@ lastupdate.tmp
 .vscode/
 .idea/
 sga_plan_trabajo_docente_mid
+sga_trabajo_docente_mid
 main
 .scannerwork/
 swagger/*.png
@@ -16,5 +17,6 @@ swagger/lang/
 swagger/lib/
 swagger.zip
 sga_plan_trabajo_docente_mid.exe
+sga_trabajo_docente_mid.exe
 go.mod
 go.sum
