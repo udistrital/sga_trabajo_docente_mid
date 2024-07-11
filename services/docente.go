@@ -100,3 +100,67 @@ func ListaDocentesxNombreVinculacion(nombre string, vinculacion int64) requestma
 		c.Data["json"] = map[string]interface{}{"Success": false, "Status": "404", "Message": "No se encontraron registros de docentes"} */
 	}
 }
+
+// Busca el docente por documento y sus vinculaciones asociadas de tipo docente
+func BuscarDocenteConVinculaciones(documento string) (response requestmanager.APIResponse) {
+	// 0. Inicialización de variables
+	var docente map[string]interface{}
+	response = requestmanager.APIResponseDTO(false, 404, docente, "No se encontraron registros de docentes")
+	idsVinculacionTipoDocente := []int64{293, 294, 296, 297, 298, 299}
+
+	// 1. Busca los terceros relacionados al documento
+	resTercero := []interface{}{}
+	errResTercero := request.GetJson("http://"+beego.AppConfig.String("TercerosService")+"datos_identificacion?query=Activo:true,Numero:"+documento, &resTercero)
+	if errResTercero != nil {
+		logs.Error(errResTercero)
+		response = requestmanager.APIResponseDTO(false, 404, nil, "No se encontraron registros de docentes")
+		return response
+	}
+	if fmt.Sprint(resTercero) == "[map[]]" {
+		response = requestmanager.APIResponseDTO(false, 404, nil, "No se encontraron registros de docentes")
+		return response
+	}
+
+	for _, tercero := range resTercero {
+		// 1.1 Obtener el id del tercero
+		terceroId := fmt.Sprintf("%v", tercero.(map[string]interface{})["TerceroId"].(map[string]interface{})["Id"])
+
+		// 2. Buscar las vinculaciones del tercero por id del tercero
+		resVinculacion := []interface{}{}
+		errResVinculacion := request.GetJson("http://"+beego.AppConfig.String("TercerosService")+"vinculacion?query=Activo:true,tercero_principal_id:"+terceroId+"&fields=TipoVinculacionId", &resVinculacion)
+		if errResVinculacion != nil {
+			logs.Error(errResVinculacion)
+			continue // Continuar con el siguiente tercero
+		}
+		if fmt.Sprint(resVinculacion) == "[map[]]" {
+			continue // Continuar con el siguiente tercero
+		}
+
+		// 3. Buscar el tipo de vinculacion docente
+		var docenteVinculacionesIds []int64
+		for _, vinculacion := range resVinculacion {
+			vinculacionId := fmt.Sprintf("%v", vinculacion.(map[string]interface{})["TipoVinculacionId"])
+
+			// 4. Verificar si la vinculacion es de tipo docente
+			for _, idVinculacionTipoDocente := range idsVinculacionTipoDocente {
+				if vinculacionId == fmt.Sprint(idVinculacionTipoDocente) {
+					docenteVinculacionesIds = append(docenteVinculacionesIds, idVinculacionTipoDocente)
+				}
+			}
+		}
+
+		// 5. Si el tercero tiene vinculaciones de tipo docente
+		if len(docenteVinculacionesIds) > 0 {
+			docente = map[string]interface{}{
+				"Nombre":        utils.Capitalize(tercero.(map[string]interface{})["TerceroId"].(map[string]interface{})["NombreCompleto"].(string)),
+				"Documento":     documento,
+				"Id":            tercero.(map[string]interface{})["TerceroId"].(map[string]interface{})["Id"],
+				"Vinculaciones": docenteVinculacionesIds,
+			}
+			response = requestmanager.APIResponseDTO(true, 200, docente, "Registro de docente encontrado")
+			return response // Retorna el docente encontrado
+		}
+	}
+
+	return response // Retorna la respuesta por defecto si no se encuentra ningún docente con vinculaciones
+}
