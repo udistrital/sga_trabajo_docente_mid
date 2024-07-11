@@ -33,18 +33,27 @@ func (c *DocenteController) DocumentoDocenteVinculacion() {
 	documento := c.GetString("documento")
 	vinculacion, errvin := c.GetInt64("vinculacion")
 
-	if errvin != nil {
-		logs.Error(errvin)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) no válido(s) o faltante(s)")
-		c.Ctx.Output.SetStatus(400)
-	} else if documento == "" || vinculacion <= 0 {
-		logs.Error(documento, vinculacion)
-		c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos")
-		c.Ctx.Output.SetStatus(400)
-	} else {
-		resultado := services.ListaDocentesxDocumentoVinculacion(documento, vinculacion)
-		c.Data["json"] = resultado
-		c.Ctx.Output.SetStatus(resultado.Status)
+	// Verificar si se proporciona el parametro de vinculacion, si no se proporciona se busca el docente con todas sus vinculaciones
+	if errvin == nil { // Si no hay error en la conversion del parametro de vinculacion entonces la vinculacion fue proporcionada
+		if documento == "" || vinculacion <= 0 { // Verifica si el documento o la vinculacion no son validos
+			logs.Error(documento, vinculacion) // Imprime los valores de los parametros
+			c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) con valores no válidos") // Responde con un error 400
+			c.Ctx.Output.SetStatus(400) // Establece el status de la respuesta
+		} else { // Si los parametros son validos
+			resultado := services.ListaDocentesxDocumentoVinculacion(documento, vinculacion) // Busca los docentes con el documento y la vinculacion proporcionados
+			c.Data["json"] = resultado // Establece la respuesta 
+			c.Ctx.Output.SetStatus(resultado.Status) // Establece el status de la respuesta 
+		}
+	} else { // Si no se proporciona la vinculacion
+		if documento == "" { // Verifica si el documento no es valido
+			logs.Error(documento) // Imprime el valor del documento
+			c.Data["json"] = requestmanager.APIResponseDTO(false, 400, nil, "Error: Parámetro(s) no válido(s) o faltante(s)") // Responde con un error 400
+			c.Ctx.Output.SetStatus(400) // Establece el status de la respuesta
+		} else { // Si el documento es valido
+			resultado := services.BuscarDocenteConVinculaciones(documento) // Busca el docente con todas sus vinculaciones
+			c.Data["json"] = resultado // Establece la respuesta
+			c.Ctx.Output.SetStatus(200) // Establece el status de la respuesta
+		}
 	}
 
 	c.ServeJSON()
