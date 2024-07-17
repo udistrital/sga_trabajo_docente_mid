@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/udistrital/sga_plan_trabajo_docente_mid/models"
+	"github.com/udistrital/sga_trabajo_docente_mid/models"
 )
 
 // Checkeo de Id si cumple
@@ -206,4 +206,22 @@ func SplitTrimSpace(s, sep string) []string {
 		substrings[i] = strings.TrimSpace(elementString)
 	}
 	return substrings
+}
+
+func GetOrDefault(value interface{}, defaultValue interface{}) interface{} {
+	if value == nil {
+		return defaultValue
+	}
+	switch v := value.(type) {
+	case string:
+		if v == "" {
+			return defaultValue
+		}
+	case int:
+		if v == 0 {
+			return defaultValue
+		}
+		// Añadir más tipos según sea necesario
+	}
+	return value
 }
