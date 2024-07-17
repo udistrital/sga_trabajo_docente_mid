@@ -39,27 +39,27 @@ func DefinePTD(body map[string]interface{}) requestmanager.APIResponse {
 
 		bodyColocacion := map[string]interface{}{
 			"Activo":                         true,
-			"ColocacionEspacioAcademico":     carga.(map[string]interface{})["horario"],
-			"EspacioAcademicoId":             carga.(map[string]interface{})["espacio_academico_id"],
-			"EspacioFisicoId":                carga.(map[string]interface{})["salon_id"],
-			"ResumenColocacionEspacioFisico": string(resumenColocacionStr),
+			"ColocacionEspacioAcademico":     utils.GetOrDefault(carga.(map[string]interface{})["horario"], "NA"),
+			"EspacioAcademicoId":             utils.GetOrDefault(carga.(map[string]interface{})["espacio_academico_id"], "NA"),
+			"EspacioFisicoId":                utils.GetOrDefault(carga.(map[string]interface{})["salon_id"], -1),
+			"ResumenColocacionEspacioFisico": utils.GetOrDefault(string(resumenColocacionStr), "NA"),
 		}
 		bodyCarga := map[string]interface{}{
-			"espacio_academico_id": carga.(map[string]interface{})["espacio_academico_id"],
-			"actividad_id":         carga.(map[string]interface{})["actividad_id"],
-			"id":                   carga.(map[string]interface{})["id"],
-			"plan_docente_id":      carga.(map[string]interface{})["plan_docente_id"],
-			"hora_inicio":          carga.(map[string]interface{})["hora_inicio"],
-			"duracion":             carga.(map[string]interface{})["duracion"],
-			"salon_id":             carga.(map[string]interface{})["salon_id"],
-			"activo":               carga.(map[string]interface{})["activo"],
+			"espacio_academico_id": utils.GetOrDefault(carga.(map[string]interface{})["espacio_academico_id"], "NA"),
+			"actividad_id":         utils.GetOrDefault(carga.(map[string]interface{})["actividad_id"], "NA"),
+			"id":                   utils.GetOrDefault(carga.(map[string]interface{})["id"], "NA"),
+			"plan_docente_id":      utils.GetOrDefault(carga.(map[string]interface{})["plan_docente_id"], "NA"),
+			"hora_inicio":          utils.GetOrDefault(carga.(map[string]interface{})["hora_inicio"], "NA"),
+			"duracion":             utils.GetOrDefault(carga.(map[string]interface{})["duracion"], "NA"),
+			"salon_id":             utils.GetOrDefault(carga.(map[string]interface{})["salon_id"], "NA"),
+			"activo":               utils.GetOrDefault(carga.(map[string]interface{})["activo"], "NA"),
 		}
 
 		if carga.(map[string]interface{})["id"] == nil {
 			if errPostPlacement := request.SendJson("http://"+beego.AppConfig.String("HorarioService")+"colocacion-espacio-academico/",
 				"POST", &resColocacion, bodyColocacion); errPostPlacement == nil {
 				if resColocacion["Success"].(bool) {
-					bodyCarga["colocacion_espacio_academico_id"] = resColocacion["Data"].(map[string]interface{})["Id"]
+					bodyCarga["colocacion_espacio_academico_id"] = resColocacion["Data"].(map[string]interface{})["_id"]
 					if errPostCarga := request.SendJson("http://"+beego.AppConfig.String("PlanTrabajoDocenteService")+"carga_plan/",
 						"POST", &resCarga, bodyCarga); errPostCarga == nil {
 						if resCarga["Success"].(bool) {
@@ -80,7 +80,7 @@ func DefinePTD(body map[string]interface{}) requestmanager.APIResponse {
 						if errPutColocacion := request.SendJson("http://"+beego.AppConfig.String("HorarioService")+"colocacion-espacio-academico/"+colId.(string),
 							"PUT", &resColocacion, bodyColocacion); errPutColocacion == nil {
 							if resColocacion["Success"].(bool) {
-								bodyCarga["colocacion_espacio_academico_id"] = resColocacion["Data"].(map[string]interface{})["Id"]
+								bodyCarga["colocacion_espacio_academico_id"] = resColocacion["Data"].(map[string]interface{})["_id"]
 								if errPutCarga := request.SendJson("http://"+beego.AppConfig.String("PlanTrabajoDocenteService")+"carga_plan/"+carga.(map[string]interface{})["id"].(string),
 									"PUT", &resCarga, bodyCarga); errPutCarga == nil {
 									if resCarga["Success"].(bool) {
@@ -97,7 +97,7 @@ func DefinePTD(body map[string]interface{}) requestmanager.APIResponse {
 						if errPutColocacion := request.SendJson("http://"+beego.AppConfig.String("HorarioService")+"colocacion-espacio-academico/",
 							"POST", &resColocacion, bodyColocacion); errPutColocacion == nil {
 							if resColocacion["Success"].(bool) {
-								bodyCarga["colocacion_espacio_academico_id"] = resColocacion["Data"].(map[string]interface{})["Id"]
+								bodyCarga["colocacion_espacio_academico_id"] = resColocacion["Data"].(map[string]interface{})["_id"]
 								if errPutCarga := request.SendJson("http://"+beego.AppConfig.String("PlanTrabajoDocenteService")+"carga_plan/"+carga.(map[string]interface{})["id"].(string),
 									"PUT", &resCarga, bodyCarga); errPutCarga == nil {
 									if resCarga["Success"].(bool) {
@@ -247,31 +247,32 @@ func consultarDetallePlan(planes []interface{}, idVinculacion int64) map[string]
 								salonId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["salon_id"])
 
 								cargaDetalle := map[string]interface{}{
-									"id":      carga.(map[string]interface{})["_id"].(string),
-									"horario": horarioJSON,
+									"id":                   carga.(map[string]interface{})["_id"].(string),
+									"horario":              horarioJSON,
+									"espacio_academico_id": carga.(map[string]interface{})["espacio_academico_id"].(string),
 								}
-								if sedeId != "-" {
+								if sedeId != "NA" {
 									if errSede := request.GetJson("http://"+beego.AppConfig.String("OikosService")+"espacio_fisico?query=Id:"+sedeId+"&fields=Id,Nombre,CodigoAbreviacion", &sede); errSede == nil {
 										cargaDetalle["sede"] = sede[0]
 									}
 								} else {
-									cargaDetalle["sede"] = "-"
+									cargaDetalle["sede"] = "NA"
 								}
 
-								if edificioId != "-" {
+								if edificioId != "NA" {
 									if errEdificio := request.GetJson("http://"+beego.AppConfig.String("OikosService")+"espacio_fisico/"+edificioId, &edificio); errEdificio == nil {
 										cargaDetalle["edificio"] = edificio
 									}
 								} else {
-									cargaDetalle["edificio"] = "-"
+									cargaDetalle["edificio"] = "NA"
 								}
 
-								if salonId != "-" {
+								if salonId != "NA" {
 									if errSalon := request.GetJson("http://"+beego.AppConfig.String("OikosService")+"espacio_fisico/"+salonId, &salon); errSalon == nil {
 										cargaDetalle["salon"] = salon
 									}
 								} else {
-									cargaDetalle["salon"] = "-"
+									cargaDetalle["salon"] = "NA"
 								}
 
 								cargaPlan = append(cargaPlan, cargaDetalle)
