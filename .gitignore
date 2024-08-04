@@ -20,3 +20,5 @@ sga_plan_trabajo_docente_mid.exe
 sga_trabajo_docente_mid.exe
 go.mod
 go.sum
+
+.env

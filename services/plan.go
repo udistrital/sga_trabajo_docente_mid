@@ -247,9 +247,10 @@ func consultarDetallePlan(planes []interface{}, idVinculacion int64) map[string]
 								salonId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["salon_id"])
 
 								cargaDetalle := map[string]interface{}{
-									"id":                   carga.(map[string]interface{})["_id"].(string),
-									"horario":              horarioJSON,
-									"espacio_academico_id": carga.(map[string]interface{})["espacio_academico_id"].(string),
+									"id":                              carga.(map[string]interface{})["_id"].(string),
+									"horario":                         horarioJSON,
+									"espacio_academico_id":            carga.(map[string]interface{})["espacio_academico_id"].(string),
+									"colocacion_espacio_academico_id": carga.(map[string]interface{})["colocacion_espacio_academico_id"].(string),
 								}
 								if sedeId != "NA" {
 									if errSede := request.GetJson("http://"+beego.AppConfig.String("OikosService")+"espacio_fisico?query=Id:"+sedeId+"&fields=Id,Nombre,CodigoAbreviacion", &sede); errSede == nil {
