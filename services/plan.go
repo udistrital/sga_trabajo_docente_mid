@@ -37,9 +37,13 @@ func DefinePTD(body map[string]interface{}) requestmanager.APIResponse {
 			panic(errCol)
 		}
 
+		colocacionStr, errCol := json.Marshal(carga.(map[string]interface{})["horario"])
+		if errCol != nil {
+			panic(errCol)
+		}
 		bodyColocacion := map[string]interface{}{
 			"Activo":                         true,
-			"ColocacionEspacioAcademico":     utils.GetOrDefault(carga.(map[string]interface{})["horario"], "NA"),
+			"ColocacionEspacioAcademico":     utils.GetOrDefault(string(colocacionStr), "NA"),
 			"EspacioAcademicoId":             utils.GetOrDefault(carga.(map[string]interface{})["espacio_academico_id"], "NA"),
 			"EspacioFisicoId":                utils.GetOrDefault(carga.(map[string]interface{})["salon_id"], -1),
 			"ResumenColocacionEspacioFisico": utils.GetOrDefault(string(resumenColocacionStr), "NA"),
@@ -227,7 +231,7 @@ func consultarDetallePlan(planes []interface{}, idVinculacion int64) map[string]
 		if errCarga := request.GetJson("http://"+beego.AppConfig.String("PlanTrabajoDocenteService")+"carga_plan?query=activo:true,plan_docente_id:"+plan.(map[string]interface{})["_id"].(string), &resCarga); errCarga == nil {
 			if fmt.Sprintf("%v", resCarga["Data"]) != "[]" {
 				for _, carga := range resCarga["Data"].([]interface{}) {
-					var horarioJSON map[string]interface{}
+					var horario map[string]interface{}
 					var sede []map[string]interface{}
 					var edificio map[string]interface{}
 					var salon map[string]interface{}
@@ -240,15 +244,15 @@ func consultarDetallePlan(planes []interface{}, idVinculacion int64) map[string]
 					if colId, colExists := carga.(map[string]interface{})["colocacion_espacio_academico_id"]; colExists {
 						if errColocacion := request.GetJson("http://"+beego.AppConfig.String("HorarioService")+"colocacion-espacio-academico/"+colId.(string), &resColocacion); errColocacion == nil {
 							if resColocacion["Success"].(bool) {
-								json.Unmarshal([]byte(resColocacion["Data"].(map[string]interface{})["ColocacionEspacioAcademico"].(string)), &horarioJSON)
 								json.Unmarshal([]byte(resColocacion["Data"].(map[string]interface{})["ResumenColocacionEspacioFisico"].(string)), &resumenColocacion)
+								json.Unmarshal([]byte(resColocacion["Data"].(map[string]interface{})["ColocacionEspacioAcademico"].(string)), &horario)
 								sedeId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["sede_id"])
 								edificioId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["edificio_id"])
 								salonId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["salon_id"])
 
 								cargaDetalle := map[string]interface{}{
 									"id":                              carga.(map[string]interface{})["_id"].(string),
-									"horario":                         horarioJSON,
+									"horario":                         horario,
 									"espacio_academico_id":            carga.(map[string]interface{})["espacio_academico_id"].(string),
 									"colocacion_espacio_academico_id": carga.(map[string]interface{})["colocacion_espacio_academico_id"].(string),
 								}
