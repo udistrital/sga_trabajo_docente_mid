@@ -126,6 +126,15 @@ func init() {
 
     beego.GlobalControllerRouter["github.com/udistrital/sga_trabajo_docente_mid/controllers:PreasignacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_trabajo_docente_mid/controllers:PreasignacionController"],
         beego.ControllerComments{
+            Method: "DeletePreasignacion",
+            Router: "/:preasignacion_id",
+            AllowHTTPMethods: []string{"delete"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["github.com/udistrital/sga_trabajo_docente_mid/controllers:PreasignacionController"] = append(beego.GlobalControllerRouter["github.com/udistrital/sga_trabajo_docente_mid/controllers:PreasignacionController"],
+        beego.ControllerComments{
             Method: "Aprobar",
             Router: "/aprobar",
             AllowHTTPMethods: []string{"put"},

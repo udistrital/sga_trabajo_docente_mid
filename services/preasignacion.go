@@ -9,6 +9,7 @@ import (
 	"github.com/udistrital/sga_trabajo_docente_mid/models"
 	"github.com/udistrital/sga_trabajo_docente_mid/utils"
 	request "github.com/udistrital/utils_oas/request"
+	"github.com/udistrital/utils_oas/requestresponse"
 	requestmanager "github.com/udistrital/utils_oas/requestresponse"
 )
 
@@ -25,18 +26,12 @@ func ListaPreasignacion(vigencia string) requestmanager.APIResponse {
 				preasignacion["aprobacion_proyecto"].(map[string]interface{})["disabled"] = true
 			}
 			return requestmanager.APIResponseDTO(true, 200, response)
-			/* c.Ctx.Output.SetStatus(200)
-			c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Query successful", "Data": response} */
 		} else {
 			return requestmanager.APIResponseDTO(false, 404, nil, "No se encontraron registros de preasignaciones")
-			/* c.Ctx.Output.SetStatus(404)
-			c.Data["json"] = map[string]interface{}{"Success": false, "Status": "404", "Message": "No se encontraron registros de preasignaciones"} */
 		}
 	} else {
 		logs.Error(errPreasignacion)
 		return requestmanager.APIResponseDTO(false, 404, nil, "No se encontraron registros de preasignaciones")
-		/* c.Ctx.Output.SetStatus(404)
-		c.Data["json"] = map[string]interface{}{"Success": false, "Status": "404", "Message": "No se encontraron registros de preasignaciones"} */
 	}
 }
 
@@ -115,18 +110,12 @@ func ListaPreasignacionDocente(docente, vigencia string) requestmanager.APIRespo
 			}
 
 			return requestmanager.APIResponseDTO(true, 200, response)
-			/* c.Ctx.Output.SetStatus(200)
-			c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Query successful", "Data": response} */
 		} else {
 			return requestmanager.APIResponseDTO(false, 404, nil, "No se encontraron registros para el docente")
-			/* c.Ctx.Output.SetStatus(404)
-			c.Data["json"] = map[string]interface{}{"Success": false, "Status": "404", "Message": "No se encontraron registros para el docente"} */
 		}
 	} else {
 		logs.Error(errPreasignacion)
 		return requestmanager.APIResponseDTO(false, 404, nil, "No se encontraron registros de docentes")
-		/* c.Ctx.Output.SetStatus(404)
-		c.Data["json"] = map[string]interface{}{"Success": false, "Status": "404", "Message": "No se encontraron registros de docentes"} */
 	}
 }
 
@@ -192,14 +181,10 @@ func DefinePreasignacion(body map[string]interface{}) requestmanager.APIResponse
 						//------------------------------------------Finalización Actualización------------------------------------------------------
 					} else {
 						return requestmanager.APIResponseDTO(false, 404, nil, "No se encontraron registros para el docente")
-						/* c.Ctx.Output.SetStatus(404)
-						c.Data["json"] = map[string]interface{}{"Success": false, "Status": "404", "Message": "No se encontraron registros para el docente"} */
 					}
 				} else {
 					logs.Error(errEspacios)
 					return requestmanager.APIResponseDTO(false, 404, nil, "No se encontraron registros de espacios academicos hijos")
-					/* c.Ctx.Output.SetStatus(404)
-					c.Data["json"] = map[string]interface{}{"Success": false, "Status": "404", "Message": "No se encontraron registros de espacios academicos hijos"} */
 				}
 
 			}
@@ -260,4 +245,22 @@ func DefinePreasignacion(body map[string]interface{}) requestmanager.APIResponse
 	}
 
 	return requestmanager.APIResponseDTO(true, 200, resultado)
+}
+
+func DeletePreasignacion(preAsignacionId string) requestmanager.APIResponse {
+	urlPreasignacion := "http://" + beego.AppConfig.String("PlanTrabajoDocenteService") + "pre_asignacion/" + preAsignacionId
+	var preAsignacion map[string]interface{}
+	if err := request.GetJson(urlPreasignacion, &preAsignacion); err != nil {
+		return requestresponse.APIResponseDTO(false, 404, nil, "Error en el servicio plan docente"+err.Error())
+	}
+
+	espacioAcademicoId := preAsignacion["Data"].(map[string]interface{})["espacio_academico_id"].(string)
+
+	urlColocaciones := "http://" + beego.AppConfig.String("HorarioService") + "colocacion-espacio-academico?query=Activo:true,EspacioAcademicoId:" + espacioAcademicoId + "&limit=0"
+	var colocacionesRes map[string]interface{}
+	if err := request.GetJson(urlColocaciones, &colocacionesRes); err != nil {
+		return requestresponse.APIResponseDTO(false, 404, nil, "Error en el servicio plan docente"+err.Error())
+	}
+
+	return requestmanager.APIResponseDTO(true, 200, colocacionesRes["Data"], "")
 }

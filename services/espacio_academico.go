@@ -13,7 +13,7 @@ import (
 // GrupoEspacioAcademico ...
 func ListaGruposEspaciosAcademicos(padre, vigencia string) requestmanager.APIResponse {
 	var response []interface{}
-	queryParams := "query=espacio_academico_padre:" + padre +
+	queryParams := "query=,activo:true,espacio_academico_padre:" + padre +
 		",periodo_id:" + vigencia
 	if resSpaces, errSpace := getAcademicSpacesByQuery(queryParams); errSpace == nil {
 		if resSpaces != nil {
@@ -69,6 +69,10 @@ func getAcademicSpacesByQuery(query string) (any, error) {
 func getAcademicProjectByQuery(query string, resProject *[]any) error {
 	urlAcademicProject := "http://" + beego.AppConfig.String("ProyectoAcademicoService") +
 		"proyecto_academico_institucion?" + query
+
+	fmt.Println("asdjhasjkdhaskdhasjkhdskajd")
+	fmt.Println(urlAcademicProject)
+
 	if errProject := request.GetJson(urlAcademicProject, &resProject); errProject == nil {
 		return nil
 	} else {
