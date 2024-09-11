@@ -6,6 +6,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
+	"github.com/udistrital/sga_trabajo_docente_mid/helpers"
 	"github.com/udistrital/sga_trabajo_docente_mid/models"
 	"github.com/udistrital/sga_trabajo_docente_mid/utils"
 	request "github.com/udistrital/utils_oas/request"
@@ -255,6 +256,7 @@ func DeletePreasignacion(preAsignacionId string) requestmanager.APIResponse {
 	}
 
 	espacioAcademicoId := preAsignacion["Data"].(map[string]interface{})["espacio_academico_id"].(string)
+	docenteId := preAsignacion["Data"].(map[string]interface{})["docente_id"].(string)
 
 	urlColocaciones := "http://" + beego.AppConfig.String("HorarioService") + "colocacion-espacio-academico?query=Activo:true,EspacioAcademicoId:" + espacioAcademicoId + "&limit=0"
 	var colocacionesRes map[string]interface{}
@@ -262,5 +264,27 @@ func DeletePreasignacion(preAsignacionId string) requestmanager.APIResponse {
 		return requestresponse.APIResponseDTO(false, 404, nil, "Error en el servicio plan docente"+err.Error())
 	}
 
-	return requestmanager.APIResponseDTO(true, 200, colocacionesRes["Data"], "")
+	if len(colocacionesRes["Data"].([]interface{})) > 0 {
+		return requestmanager.APIResponseDTO(false, 200, nil, "tiene colocaciones")
+	}
+
+	_, err := helpers.DesactivarPreAsignacion(preAsignacionId)
+	if err != nil {
+		return requestresponse.APIResponseDTO(false, 500, nil, err.Error())
+	}
+
+	if planDocenteId, exists := preAsignacion["Data"].(map[string]interface{})["plan_docente_id"]; exists || planDocenteId != nil {
+		planDocenteId := preAsignacion["Data"].(map[string]interface{})["plan_docente_id"].(string)
+		_, err := helpers.CambiarEstadoDePlanDocente(planDocenteId, "DEF") //DEF es el codigo de abreviacion de Definido
+		if err != nil {
+			return requestresponse.APIResponseDTO(false, 500, nil, err.Error())
+		}
+	}
+
+	_, err = helpers.DesasignarDocenteDeEspacioAcademico(espacioAcademicoId, docenteId)
+	if err != nil {
+		return requestresponse.APIResponseDTO(false, 500, nil, err.Error())
+	}
+
+	return requestmanager.APIResponseDTO(true, 200, nil, "eliminado correctamente")
 }
