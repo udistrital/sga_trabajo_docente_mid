@@ -51,14 +51,6 @@ func obtenerInformacionRequeridaRepCargaLectiva(docente, vinculacion, periodo in
 	if err != nil {
 		logs.Error(err)
 		return infoRequeridaRepCL{}, fmt.Errorf("TercerosService (datos_identificacion): " + err.Error())
-		/* badAns, code := requestmanager.MidResponseFormat("TercerosService (datos_identificacion)", "GET", false, map[string]interface{}{
-			"response": resp,
-			"error":    err.Error(),
-		})
-		c.Ctx.Output.SetStatus(code)
-		c.Data["json"] = badAns
-		c.ServeJSON()
-		return requestmanager.APIResponseDTO(false, 404, nil) */
 	}
 	datoIdenfTercero := models.DatosIdentificacion{}
 	utils.ParseData(resp.([]interface{})[0], &datoIdenfTercero)
@@ -67,14 +59,6 @@ func obtenerInformacionRequeridaRepCargaLectiva(docente, vinculacion, periodo in
 	if err != nil {
 		logs.Error(err)
 		return infoRequeridaRepCL{}, fmt.Errorf("ParametroService (parametro): " + err.Error())
-		/* badAns, code := requestmanager.MidResponseFormat("ParametroService (parametro)", "GET", false, map[string]interface{}{
-			"response": resp,
-			"error":    err.Error(),
-		})
-		c.Ctx.Output.SetStatus(code)
-		c.Data["json"] = badAns
-		c.ServeJSON()
-		return */
 	}
 	datoVinculacion := models.Parametro{}
 	utils.ParseData(resp, &datoVinculacion)
@@ -83,14 +67,6 @@ func obtenerInformacionRequeridaRepCargaLectiva(docente, vinculacion, periodo in
 	if err != nil {
 		logs.Error(err)
 		return infoRequeridaRepCL{}, fmt.Errorf("ParametroService (periodo): " + err.Error())
-		/* badAns, code := requestmanager.MidResponseFormat("ParametroService (periodo)", "GET", false, map[string]interface{}{
-			"response": resp,
-			"error":    err.Error(),
-		})
-		c.Ctx.Output.SetStatus(code)
-		c.Data["json"] = badAns
-		c.ServeJSON()
-		return */
 	}
 	datoPeriodo := models.Periodo{}
 	utils.ParseData(resp, &datoPeriodo)
@@ -100,14 +76,6 @@ func obtenerInformacionRequeridaRepCargaLectiva(docente, vinculacion, periodo in
 	if err != nil {
 		logs.Error(err)
 		return infoRequeridaRepCL{}, fmt.Errorf("PlanTrabajoDocenteService (plan_docente): " + err.Error())
-		/* badAns, code := requestmanager.MidResponseFormat("PlanTrabajoDocenteService (plan_docente)", "GET", false, map[string]interface{}{
-			"response": resp,
-			"error":    err.Error(),
-		})
-		c.Ctx.Output.SetStatus(code)
-		c.Data["json"] = badAns
-		c.ServeJSON()
-		return */
 	}
 	datoPlanDocente := models.PlanDocente{}
 	utils.ParseData(resp.([]interface{})[0], &datoPlanDocente)
@@ -120,14 +88,6 @@ func obtenerInformacionRequeridaRepCargaLectiva(docente, vinculacion, periodo in
 	if err != nil {
 		logs.Error(err)
 		return infoRequeridaRepCL{}, fmt.Errorf("PlanTrabajoDocenteService (carga_plan): " + err.Error())
-		/* badAns, code := requestmanager.MidResponseFormat("PlanTrabajoDocenteService (carga_plan)", "GET", false, map[string]interface{}{
-			"response": resp,
-			"error":    err.Error(),
-		})
-		c.Ctx.Output.SetStatus(code)
-		c.Data["json"] = badAns
-		c.ServeJSON()
-		return */
 	}
 	datosCargaPlan := []models.CargaPlan{}
 	utils.ParseData(resp, &datosCargaPlan)
@@ -144,7 +104,7 @@ func obtenerInformacionRequeridaRepCargaLectiva(docente, vinculacion, periodo in
 		resumenColocacion := models.ResumenColocacion{}
 		json.Unmarshal([]byte(resp.(map[string]interface{})["ResumenColocacionEspacioFisico"].(string)), &resumenColocacion)
 
-		datosCargaPlan[i].Horario = resumenColocacion.Colocacion
+		datosCargaPlan[i].Horario = string(resumenColocacion.Colocacion)
 		datosCargaPlan[i].Sede_id = fmt.Sprint(resumenColocacion.EspacioFisico.SedeId)
 		datosCargaPlan[i].Edificio_id = fmt.Sprint(resumenColocacion.EspacioFisico.EdificioId)
 		datosCargaPlan[i].Salon_id = fmt.Sprint(resumenColocacion.EspacioFisico.SalonId)
@@ -155,6 +115,7 @@ func obtenerInformacionRequeridaRepCargaLectiva(docente, vinculacion, periodo in
 }
 
 func generarReporteCargaLectiva(infoRequerida infoRequeridaRepCL, cargaTipo string) requestmanager.APIResponse {
+	pp.Println(infoRequerida)
 	inBog, _ := time.LoadLocation("America/Bogota")
 	horaes := time.Now().In(inBog).Format("02/01/2006 15:04:05")
 
@@ -163,14 +124,6 @@ func generarReporteCargaLectiva(infoRequerida infoRequeridaRepCL, cargaTipo stri
 	if errt != nil {
 		logs.Error(errt)
 		return requestmanager.APIResponseDTO(false, 404, nil, "ReporteCargaLectiva (reading_template): "+errt.Error())
-		/* badAns, code := requestmanager.MidResponseFormat("ReporteCargaLectiva (reading_template)", "GET", false, map[string]interface{}{
-			"response": template,
-			"error":    errt.Error(),
-		})
-		c.Ctx.Output.SetStatus(code)
-		c.Data["json"] = badAns
-		c.ServeJSON()
-		return */
 	}
 	defer func() {
 		if err := template.Close(); err != nil {
@@ -212,7 +165,7 @@ func generarReporteCargaLectiva(infoRequerida infoRequeridaRepCL, cargaTipo stri
 	const (
 		CargaLectiva int     = 1
 		Actividades          = 2
-		WidthX       float64 = 150
+		WidthX       float64 = 110
 		HeightY      float64 = 18.75 // ? Altura de hora es 75px 1/4 => 18.75
 	)
 
@@ -268,14 +221,6 @@ func generarReporteCargaLectiva(infoRequerida infoRequeridaRepCL, cargaTipo stri
 			if err != nil {
 				logs.Error(err)
 				return requestmanager.APIResponseDTO(false, 404, nil, "EspaciosAcademicosService (espacio-academico): "+err.Error())
-				/* badAns, code := requestmanager.MidResponseFormat("EspaciosAcademicosService (espacio-academico)", "GET", false, map[string]interface{}{
-					"response": resp,
-					"error":    err.Error(),
-				})
-				c.Ctx.Output.SetStatus(code)
-				c.Data["json"] = badAns
-				c.ServeJSON()
-				return */
 			}
 			nombreCarga = resp.(map[string]interface{})["nombre"].(string) + " - " + resp.(map[string]interface{})["grupo"].(string)
 			template.SetCellStyle(sheet, ini, fin, CargaStyle)
@@ -285,14 +230,6 @@ func generarReporteCargaLectiva(infoRequerida infoRequeridaRepCL, cargaTipo stri
 			if err != nil {
 				logs.Error(err)
 				return requestmanager.APIResponseDTO(false, 404, nil, "PlanTrabajoDocenteService (actividad): "+err.Error())
-				/* badAns, code := requestmanager.MidResponseFormat("PlanTrabajoDocenteService (actividad)", "GET", false, map[string]interface{}{
-					"response": resp,
-					"error":    err.Error(),
-				})
-				c.Ctx.Output.SetStatus(code)
-				c.Data["json"] = badAns
-				c.ServeJSON()
-				return */
 			}
 			nombreCarga = resp.(map[string]interface{})["nombre"].(string)
 			template.SetCellStyle(sheet, ini, fin, ActividadStyle)
@@ -302,14 +239,6 @@ func generarReporteCargaLectiva(infoRequerida infoRequeridaRepCL, cargaTipo stri
 		if err != nil {
 			logs.Error(err)
 			return requestmanager.APIResponseDTO(false, 404, nil, "OikosService (espacio_fisico): "+err.Error())
-			/* badAns, code := requestmanager.MidResponseFormat("OikosService (espacio_fisico)", "GET", false, map[string]interface{}{
-				"response": infoEspacio,
-				"error":    err.Error(),
-			})
-			c.Ctx.Output.SetStatus(code)
-			c.Data["json"] = badAns
-			c.ServeJSON()
-			return */
 		}
 
 		labelTag := fmt.Sprintf("*%s\n*%s - %s\n*%s\n*%s",
