@@ -91,7 +91,8 @@ func consultarDetallePreasignacion(preasignaciones []interface{}) []map[string]i
 			"aprobacion_proyecto":     map[string]interface{}{"value": preasignacion.(map[string]interface{})["aprobacion_proyecto"].(bool), "disabled": false},
 			"editar":                  map[string]interface{}{"value": nil, "type": "editar", "disabled": false},
 			"enviar":                  map[string]interface{}{"value": nil, "type": "enviar", "disabled": preasignacion.(map[string]interface{})["aprobacion_proyecto"].(bool)},
-			"borrar":                  map[string]interface{}{"value": nil, "type": "borrar", "disabled": preasignacion.(map[string]interface{})["aprobacion_docente"].(bool) && preasignacion.(map[string]interface{})["aprobacion_proyecto"].(bool)},
+			// "borrar":                  map[string]interface{}{"value": nil, "type": "borrar", "disabled": preasignacion.(map[string]interface{})["aprobacion_docente"].(bool) && preasignacion.(map[string]interface{})["aprobacion_proyecto"].(bool)},
+			"borrar": map[string]interface{}{"value": nil, "type": "borrar", "disabled": false},
 		})
 	}
 	return response
@@ -258,7 +259,8 @@ func DeletePreasignacion(preAsignacionId string) requestmanager.APIResponse {
 	espacioAcademicoId := preAsignacion["Data"].(map[string]interface{})["espacio_academico_id"].(string)
 	docenteId := preAsignacion["Data"].(map[string]interface{})["docente_id"].(string)
 
-	urlColocaciones := "http://" + beego.AppConfig.String("HorarioService") + "colocacion-espacio-academico?query=Activo:true,EspacioAcademicoId:" + espacioAcademicoId + "&limit=0"
+	urlColocaciones := "http://" + beego.AppConfig.String("PlanTrabajoDocenteService") + "carga_plan?query=activo:true,espacio_academico_id:" + espacioAcademicoId
+
 	var colocacionesRes map[string]interface{}
 	if err := request.GetJson(urlColocaciones, &colocacionesRes); err != nil {
 		return requestresponse.APIResponseDTO(false, 404, nil, "Error en el servicio plan docente"+err.Error())

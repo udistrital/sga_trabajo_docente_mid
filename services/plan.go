@@ -249,7 +249,6 @@ func consultarDetallePlan(planes []interface{}, idVinculacion int64) map[string]
 								sedeId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["sede_id"])
 								edificioId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["edificio_id"])
 								salonId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["salon_id"])
-
 								cargaDetalle := map[string]interface{}{
 									"id":                              carga.(map[string]interface{})["_id"].(string),
 									"horario":                         horario,

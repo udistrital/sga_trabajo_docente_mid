@@ -11,6 +11,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
+	"github.com/k0kubun/pp"
 	"github.com/phpdave11/gofpdf"
 	"github.com/udistrital/sga_trabajo_docente_mid/models"
 	"github.com/udistrital/sga_trabajo_docente_mid/utils"
@@ -133,22 +134,20 @@ func obtenerInformacionRequeridaRepCargaLectiva(docente, vinculacion, periodo in
 
 	for i := 0; i < len(datosCargaPlan); i++ {
 		resp, err := requestmanager.Get("http://"+beego.AppConfig.String("HorarioService")+
-			fmt.Sprintf("colocacion-espacio-academico/%s", datosCargaPlan[i].Colocacion_espacio_academico_id), requestmanager.ParseResponseFormato1)
+			fmt.Sprintf("colocacion-espacio-academico/%s", datosCargaPlan[i].Colocacion_espacio_academico_id), requestmanager.ParseResponseFormato2)
+
 		if err != nil {
 			logs.Error(err)
 			return infoRequeridaRepCL{}, fmt.Errorf("HorarioService (colocacion_espacio_academico): " + err.Error())
 		}
-		if resp.(map[string]interface{})["Success"].(bool) {
-			resumenColocacion := models.ResumenColocacion{}
-			json.Unmarshal([]byte(resp.(map[string]interface{})["ResumenColocacionEspacioFisico"].(string)), &resumenColocacion)
 
-			datosCargaPlan[i].Horario = resumenColocacion.Colocacion
-			datosCargaPlan[i].Sede_id = fmt.Sprint(resumenColocacion.EspacioFisico.SedeId)
-			datosCargaPlan[i].Edificio_id = fmt.Sprint(resumenColocacion.EspacioFisico.EdificioId)
-			datosCargaPlan[i].Salon_id = fmt.Sprint(resumenColocacion.EspacioFisico.SalonId)
-		} else {
-			return infoRequeridaRepCL{}, fmt.Errorf("HorarioService (colocacion_espacio_academico): " + resp.(map[string]interface{})["Message"].(string))
-		}
+		resumenColocacion := models.ResumenColocacion{}
+		json.Unmarshal([]byte(resp.(map[string]interface{})["ResumenColocacionEspacioFisico"].(string)), &resumenColocacion)
+
+		datosCargaPlan[i].Horario = resumenColocacion.Colocacion
+		datosCargaPlan[i].Sede_id = fmt.Sprint(resumenColocacion.EspacioFisico.SedeId)
+		datosCargaPlan[i].Edificio_id = fmt.Sprint(resumenColocacion.EspacioFisico.EdificioId)
+		datosCargaPlan[i].Salon_id = fmt.Sprint(resumenColocacion.EspacioFisico.SalonId)
 
 	}
 
@@ -298,7 +297,7 @@ func generarReporteCargaLectiva(infoRequerida infoRequeridaRepCL, cargaTipo stri
 			nombreCarga = resp.(map[string]interface{})["nombre"].(string)
 			template.SetCellStyle(sheet, ini, fin, ActividadStyle)
 		}
-
+		pp.Println(carga)
 		infoEspacio, err := consultarInfoEspacioFisico(carga.Sede_id, carga.Edificio_id, carga.Salon_id)
 		if err != nil {
 			logs.Error(err)
@@ -359,12 +358,6 @@ func generarReporteCargaLectiva(infoRequerida infoRequeridaRepCL, cargaTipo stri
 		})
 	}
 
-	/* if err := template.SaveAs("../docs/Book1.xlsx"); err != nil { // ? Previsualizar archivo sin pasarlo a base64
-		fmt.Println(err)
-	} */
-	//
-	// * ----------
-
 	// * ----------
 	// * Construcción de excel a pdf
 	//
@@ -415,13 +408,6 @@ func generarReporteCargaLectiva(infoRequerida infoRequeridaRepCL, cargaTipo stri
 	}
 
 	ExcelPdf.ConvertSheets()
-
-	/* err = pdf.OutputFileAndClose("../docs/output.pdf") // ? previsualizar el pdf antes de
-	if err != nil {
-		fmt.Println(err)
-	} */
-	//
-	// * ----------
 
 	// ? una vaina ahi para redimensionar las filas.. no coinciden en excel con respecto a pdf :(
 	dim, _ := template.GetSheetDimension(sheet)
@@ -1093,12 +1079,6 @@ func generarReporteCumplimiento(infoRequerida infoRequeridaCumplimiento) request
 	template.SetSheetDimension(sheet, fmt.Sprintf("A1:AR%d", rowPosition-1))
 	template.RemoveRow(sheet, rowPosition)
 
-	/* if err := template.SaveAs("../docs/Book1.xlsx"); err != nil { // ? Previsualizar archivo sin pasarlo a base64
-		fmt.Println(err)
-	} */
-	//
-	// * ----------
-
 	// * ----------
 	// * Construcción de excel a pdf
 	//
@@ -1157,13 +1137,6 @@ func generarReporteCumplimiento(infoRequerida infoRequeridaCumplimiento) request
 
 	ExcelPdf.ConvertSheets()
 
-	/* err = pdf.OutputFileAndClose("../docs/output.pdf") // ? previsualizar el pdf antes de
-	if err != nil {
-		fmt.Println(err)
-	} */
-	//
-	// * ----------
-
 	// * ----------
 	// * Convertir a base64
 	//
@@ -1207,11 +1180,13 @@ func generarReporteCumplimiento(infoRequerida infoRequeridaCumplimiento) request
 func consultarInfoEspacioFisico(sede_id, edificio_id, salon_id string) (interface{}, error) {
 	sede, err := requestmanager.Get("http://"+beego.AppConfig.String("OikosService")+fmt.Sprintf("espacio_fisico?query=Id:%s&fields=Id,Nombre,CodigoAbreviacion&limit=1", sede_id),
 		requestmanager.ParseResonseNoFormat)
+
 	if err != nil {
 		return nil, err
 	}
 	edificio, err := requestmanager.Get("http://"+beego.AppConfig.String("OikosService")+fmt.Sprintf("espacio_fisico?query=Id:%s&fields=Id,Nombre,CodigoAbreviacion&limit=1", edificio_id),
 		requestmanager.ParseResonseNoFormat)
+
 	if err != nil {
 		return nil, err
 	}
@@ -1220,6 +1195,7 @@ func consultarInfoEspacioFisico(sede_id, edificio_id, salon_id string) (interfac
 	if err != nil {
 		return nil, err
 	}
+
 	return map[string]interface{}{
 		"sede":     sede.([]interface{})[0],
 		"edificio": edificio.([]interface{})[0],

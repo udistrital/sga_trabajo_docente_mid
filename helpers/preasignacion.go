@@ -38,11 +38,8 @@ func CambiarEstadoDePlanDocente(planDocenteId, estadoACambiar string) (map[strin
 
 	var estadoPlan map[string]interface{}
 	urlEstadoPlan := "http://" + beego.AppConfig.String("PlanTrabajoDocenteService") + "estado_plan?query=codigo_abreviacion:" + estadoACambiar
-	fmt.Println("asdasdasdasdsa")
-	fmt.Println(urlEstadoPlan)
 
 	if err := request.GetJson(urlEstadoPlan, &estadoPlan); err != nil {
-		fmt.Println(estadoPlan)
 		return nil, fmt.Errorf("error en el servicio plan docente assas: %v", err)
 	}
 
