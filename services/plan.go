@@ -46,6 +46,7 @@ func DefinePTD(body map[string]interface{}) requestmanager.APIResponse {
 			"ColocacionEspacioAcademico":     utils.GetOrDefault(string(colocacionStr), "NA"),
 			"EspacioAcademicoId":             utils.GetOrDefault(carga.(map[string]interface{})["espacio_academico_id"], "NA"),
 			"EspacioFisicoId":                utils.GetOrDefault(carga.(map[string]interface{})["salon_id"], -1),
+			"PeriodoId":                      carga.(map[string]interface{})["periodo_id"],
 			"ResumenColocacionEspacioFisico": utils.GetOrDefault(string(resumenColocacionStr), "NA"),
 		}
 		bodyCarga := map[string]interface{}{
