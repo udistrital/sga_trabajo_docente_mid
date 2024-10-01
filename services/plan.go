@@ -77,6 +77,19 @@ func DefinePTD(body map[string]interface{}) requestmanager.APIResponse {
 					resultadoCargas = append(resultadoCargas, map[string]interface{}{"id": carga.(map[string]interface{})["espacio_academico_id"], "creado": false})
 				}
 			}
+		} else if carga.(map[string]interface{})["id"] == "colocacionModuloHorario" {
+			bodyCarga["colocacion_espacio_academico_id"] = carga.(map[string]interface{})["colocacion_id"]
+			if errPostCarga := request.SendJson("http://"+beego.AppConfig.String("PlanTrabajoDocenteService")+"carga_plan/",
+				"POST", &resCarga, bodyCarga); errPostCarga == nil {
+				if resCarga["Success"].(bool) {
+					resultadoCargas = append(resultadoCargas, map[string]interface{}{"id": resCarga["Data"].(map[string]interface{})["_id"], "creado": true})
+				} else {
+					resultadoCargas = append(resultadoCargas, map[string]interface{}{"id": carga.(map[string]interface{})["espacio_academico_id"], "creado": false})
+				}
+			}
+			if errPutColocacion := request.SendJson("http://"+beego.AppConfig.String("HorarioService")+"colocacion-espacio-academico/"+carga.(map[string]interface{})["colocacion_id"].(string),
+				"PUT", &resColocacion, bodyColocacion); errPutColocacion == nil {
+			}
 		} else {
 			var planTrabajoData map[string]interface{}
 			if errPlanTrabajo := request.GetJson("http://"+beego.AppConfig.String("PlanTrabajoDocenteService")+"carga_plan/"+carga.(map[string]interface{})["id"].(string), &planTrabajoData); errPlanTrabajo == nil {
