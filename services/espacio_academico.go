@@ -13,25 +13,28 @@ import (
 // GrupoEspacioAcademico ...
 func ListaGruposEspaciosAcademicos(padre, vigencia string) requestmanager.APIResponse {
 	var response []interface{}
-	queryParams := "query=espacio_academico_padre:" + padre +
+	queryParams := "query=activo:true,espacio_academico_padre:" + padre +
 		",periodo_id:" + vigencia
 	if resSpaces, errSpace := getAcademicSpacesByQuery(queryParams); errSpace == nil {
 		if resSpaces != nil {
-			spaces := resSpaces.([]any)
+			spaces := resSpaces.([]interface{})
 			for _, space := range spaces {
-				var resProject []interface{}
-				queryParams = "query=Id:" +
-					fmt.Sprintf("%v", space.(map[string]interface{})["proyecto_academico_id"]) +
-					"&fields=Nombre,Id,NivelFormacionId"
-				if errProject := getAcademicProjectByQuery(queryParams, &resProject); errProject == nil {
-					if resProject[0].(map[string]interface{})["Id"] != nil {
-						response = append(response, map[string]interface{}{
-							"Id":                space.(map[string]interface{})["_id"],
-							"Nombre":            space.(map[string]interface{})["nombre"],
-							"ProyectoAcademico": resProject[0].(map[string]interface{})["Nombre"],
-							"Nivel":             resProject[0].(map[string]interface{})["NivelFormacionId"].(map[string]interface{})["Nombre"],
-							"grupo":             space.(map[string]interface{})["grupo"],
-						})
+				spaceMap := space.(map[string]interface{})
+				if spaceMap["espacio_modular"] == true || fmt.Sprintf("%v", spaceMap["docente_id"]) == "0" {
+					var resProject []interface{}
+					queryParams = "query=Id:" +
+						fmt.Sprintf("%v", spaceMap["proyecto_academico_id"]) +
+						"&fields=Nombre,Id,NivelFormacionId"
+					if errProject := getAcademicProjectByQuery(queryParams, &resProject); errProject == nil {
+						if resProject[0].(map[string]interface{})["Id"] != nil {
+							response = append(response, map[string]interface{}{
+								"Id":                spaceMap["_id"],
+								"Nombre":            spaceMap["nombre"],
+								"ProyectoAcademico": resProject[0].(map[string]interface{})["Nombre"],
+								"Nivel":             resProject[0].(map[string]interface{})["NivelFormacionId"].(map[string]interface{})["Nombre"],
+								"grupo":             spaceMap["grupo"],
+							})
+						}
 					}
 				}
 			}
@@ -69,6 +72,7 @@ func getAcademicSpacesByQuery(query string) (any, error) {
 func getAcademicProjectByQuery(query string, resProject *[]any) error {
 	urlAcademicProject := "http://" + beego.AppConfig.String("ProyectoAcademicoService") +
 		"proyecto_academico_institucion?" + query
+
 	if errProject := request.GetJson(urlAcademicProject, &resProject); errProject == nil {
 		return nil
 	} else {

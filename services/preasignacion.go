@@ -6,9 +6,11 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/logs"
+	"github.com/udistrital/sga_trabajo_docente_mid/helpers"
 	"github.com/udistrital/sga_trabajo_docente_mid/models"
 	"github.com/udistrital/sga_trabajo_docente_mid/utils"
 	request "github.com/udistrital/utils_oas/request"
+	"github.com/udistrital/utils_oas/requestresponse"
 	requestmanager "github.com/udistrital/utils_oas/requestresponse"
 )
 
@@ -25,18 +27,12 @@ func ListaPreasignacion(vigencia string) requestmanager.APIResponse {
 				preasignacion["aprobacion_proyecto"].(map[string]interface{})["disabled"] = true
 			}
 			return requestmanager.APIResponseDTO(true, 200, response)
-			/* c.Ctx.Output.SetStatus(200)
-			c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Query successful", "Data": response} */
 		} else {
 			return requestmanager.APIResponseDTO(false, 404, nil, "No se encontraron registros de preasignaciones")
-			/* c.Ctx.Output.SetStatus(404)
-			c.Data["json"] = map[string]interface{}{"Success": false, "Status": "404", "Message": "No se encontraron registros de preasignaciones"} */
 		}
 	} else {
 		logs.Error(errPreasignacion)
 		return requestmanager.APIResponseDTO(false, 404, nil, "No se encontraron registros de preasignaciones")
-		/* c.Ctx.Output.SetStatus(404)
-		c.Data["json"] = map[string]interface{}{"Success": false, "Status": "404", "Message": "No se encontraron registros de preasignaciones"} */
 	}
 }
 
@@ -95,7 +91,8 @@ func consultarDetallePreasignacion(preasignaciones []interface{}) []map[string]i
 			"aprobacion_proyecto":     map[string]interface{}{"value": preasignacion.(map[string]interface{})["aprobacion_proyecto"].(bool), "disabled": false},
 			"editar":                  map[string]interface{}{"value": nil, "type": "editar", "disabled": false},
 			"enviar":                  map[string]interface{}{"value": nil, "type": "enviar", "disabled": preasignacion.(map[string]interface{})["aprobacion_proyecto"].(bool)},
-			"borrar":                  map[string]interface{}{"value": nil, "type": "borrar", "disabled": preasignacion.(map[string]interface{})["aprobacion_docente"].(bool) && preasignacion.(map[string]interface{})["aprobacion_proyecto"].(bool)},
+			// "borrar":                  map[string]interface{}{"value": nil, "type": "borrar", "disabled": preasignacion.(map[string]interface{})["aprobacion_docente"].(bool) && preasignacion.(map[string]interface{})["aprobacion_proyecto"].(bool)},
+			"borrar": map[string]interface{}{"value": nil, "type": "borrar", "disabled": false},
 		})
 	}
 	return response
@@ -115,18 +112,12 @@ func ListaPreasignacionDocente(docente, vigencia string) requestmanager.APIRespo
 			}
 
 			return requestmanager.APIResponseDTO(true, 200, response)
-			/* c.Ctx.Output.SetStatus(200)
-			c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Query successful", "Data": response} */
 		} else {
 			return requestmanager.APIResponseDTO(false, 404, nil, "No se encontraron registros para el docente")
-			/* c.Ctx.Output.SetStatus(404)
-			c.Data["json"] = map[string]interface{}{"Success": false, "Status": "404", "Message": "No se encontraron registros para el docente"} */
 		}
 	} else {
 		logs.Error(errPreasignacion)
 		return requestmanager.APIResponseDTO(false, 404, nil, "No se encontraron registros de docentes")
-		/* c.Ctx.Output.SetStatus(404)
-		c.Data["json"] = map[string]interface{}{"Success": false, "Status": "404", "Message": "No se encontraron registros de docentes"} */
 	}
 }
 
@@ -192,14 +183,10 @@ func DefinePreasignacion(body map[string]interface{}) requestmanager.APIResponse
 						//------------------------------------------Finalización Actualización------------------------------------------------------
 					} else {
 						return requestmanager.APIResponseDTO(false, 404, nil, "No se encontraron registros para el docente")
-						/* c.Ctx.Output.SetStatus(404)
-						c.Data["json"] = map[string]interface{}{"Success": false, "Status": "404", "Message": "No se encontraron registros para el docente"} */
 					}
 				} else {
 					logs.Error(errEspacios)
 					return requestmanager.APIResponseDTO(false, 404, nil, "No se encontraron registros de espacios academicos hijos")
-					/* c.Ctx.Output.SetStatus(404)
-					c.Data["json"] = map[string]interface{}{"Success": false, "Status": "404", "Message": "No se encontraron registros de espacios academicos hijos"} */
 				}
 
 			}
@@ -260,4 +247,46 @@ func DefinePreasignacion(body map[string]interface{}) requestmanager.APIResponse
 	}
 
 	return requestmanager.APIResponseDTO(true, 200, resultado)
+}
+
+func DeletePreasignacion(preAsignacionId string) requestmanager.APIResponse {
+	urlPreasignacion := "http://" + beego.AppConfig.String("PlanTrabajoDocenteService") + "pre_asignacion/" + preAsignacionId
+	var preAsignacion map[string]interface{}
+	if err := request.GetJson(urlPreasignacion, &preAsignacion); err != nil {
+		return requestresponse.APIResponseDTO(false, 404, nil, "Error en el servicio plan docente"+err.Error())
+	}
+
+	espacioAcademicoId := preAsignacion["Data"].(map[string]interface{})["espacio_academico_id"].(string)
+	docenteId := preAsignacion["Data"].(map[string]interface{})["docente_id"].(string)
+
+	urlColocaciones := "http://" + beego.AppConfig.String("PlanTrabajoDocenteService") + "carga_plan?query=activo:true,espacio_academico_id:" + espacioAcademicoId
+
+	var colocacionesRes map[string]interface{}
+	if err := request.GetJson(urlColocaciones, &colocacionesRes); err != nil {
+		return requestresponse.APIResponseDTO(false, 404, nil, "Error en el servicio plan docente"+err.Error())
+	}
+
+	if len(colocacionesRes["Data"].([]interface{})) > 0 {
+		return requestmanager.APIResponseDTO(false, 200, nil, "tiene colocaciones")
+	}
+
+	_, err := helpers.DesactivarPreAsignacion(preAsignacionId)
+	if err != nil {
+		return requestresponse.APIResponseDTO(false, 500, nil, err.Error())
+	}
+
+	if planDocenteId, exists := preAsignacion["Data"].(map[string]interface{})["plan_docente_id"]; exists || planDocenteId != nil {
+		planDocenteId := preAsignacion["Data"].(map[string]interface{})["plan_docente_id"].(string)
+		_, err := helpers.CambiarEstadoDePlanDocente(planDocenteId, "DEF") //DEF es el codigo de abreviacion de Definido
+		if err != nil {
+			return requestresponse.APIResponseDTO(false, 500, nil, err.Error())
+		}
+	}
+
+	_, err = helpers.DesasignarDocenteDeEspacioAcademico(espacioAcademicoId, docenteId)
+	if err != nil {
+		return requestresponse.APIResponseDTO(false, 500, nil, err.Error())
+	}
+
+	return requestmanager.APIResponseDTO(true, 200, nil, "eliminado correctamente")
 }
