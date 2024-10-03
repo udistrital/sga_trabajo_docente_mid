@@ -46,6 +46,7 @@ func DefinePTD(body map[string]interface{}) requestmanager.APIResponse {
 			"ColocacionEspacioAcademico":     utils.GetOrDefault(string(colocacionStr), "NA"),
 			"EspacioAcademicoId":             utils.GetOrDefault(carga.(map[string]interface{})["espacio_academico_id"], "NA"),
 			"EspacioFisicoId":                utils.GetOrDefault(carga.(map[string]interface{})["salon_id"], -1),
+			"PeriodoId":                      carga.(map[string]interface{})["periodo_id"],
 			"ResumenColocacionEspacioFisico": utils.GetOrDefault(string(resumenColocacionStr), "NA"),
 		}
 		bodyCarga := map[string]interface{}{
@@ -75,6 +76,19 @@ func DefinePTD(body map[string]interface{}) requestmanager.APIResponse {
 				} else {
 					resultadoCargas = append(resultadoCargas, map[string]interface{}{"id": carga.(map[string]interface{})["espacio_academico_id"], "creado": false})
 				}
+			}
+		} else if carga.(map[string]interface{})["id"] == "colocacionModuloHorario" {
+			bodyCarga["colocacion_espacio_academico_id"] = carga.(map[string]interface{})["colocacion_id"]
+			if errPostCarga := request.SendJson("http://"+beego.AppConfig.String("PlanTrabajoDocenteService")+"carga_plan/",
+				"POST", &resCarga, bodyCarga); errPostCarga == nil {
+				if resCarga["Success"].(bool) {
+					resultadoCargas = append(resultadoCargas, map[string]interface{}{"id": resCarga["Data"].(map[string]interface{})["_id"], "creado": true})
+				} else {
+					resultadoCargas = append(resultadoCargas, map[string]interface{}{"id": carga.(map[string]interface{})["espacio_academico_id"], "creado": false})
+				}
+			}
+			if errPutColocacion := request.SendJson("http://"+beego.AppConfig.String("HorarioService")+"colocacion-espacio-academico/"+carga.(map[string]interface{})["colocacion_id"].(string),
+				"PUT", &resColocacion, bodyColocacion); errPutColocacion == nil {
 			}
 		} else {
 			var planTrabajoData map[string]interface{}
@@ -249,7 +263,6 @@ func consultarDetallePlan(planes []interface{}, idVinculacion int64) map[string]
 								sedeId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["sede_id"])
 								edificioId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["edificio_id"])
 								salonId = fmt.Sprintf("%v", resumenColocacion["espacio_fisico"].(map[string]interface{})["salon_id"])
-
 								cargaDetalle := map[string]interface{}{
 									"id":                              carga.(map[string]interface{})["_id"].(string),
 									"horario":                         horario,

@@ -20,6 +20,7 @@ func (c *PreasignacionController) URLMapping() {
 	c.Mapping("Preasignacion", c.Preasignacion)
 	c.Mapping("PreasignacionDocente", c.PreasignacionDocente)
 	c.Mapping("Aprobar", c.Aprobar)
+	c.Mapping("DeletePreasignacion", c.DeletePreasignacion)
 }
 
 // Preasignacion ...
@@ -108,5 +109,23 @@ func (c *PreasignacionController) Aprobar() {
 		c.Ctx.Output.SetStatus(resultado.Status)
 	}
 
+	c.ServeJSON()
+}
+
+// @Title DeletePreasignacion
+// @Description delete preasignacion teniendo en cuenta restricciones
+// @Param   preasignacion_id      path    string  true        "preasignacion id"
+// @Success 200 {string} delete success!
+// @Failure 404 not found resource
+// @router /:preasignacion_id [delete]
+func (c *PreasignacionController) DeletePreasignacion() {
+	defer errorhandler.HandlePanic(&c.Controller)
+
+	preAsignacionId := c.Ctx.Input.Param(":preasignacion_id")
+
+	respuesta := services.DeletePreasignacion(preAsignacionId)
+
+	c.Ctx.Output.SetStatus(respuesta.Status)
+	c.Data["json"] = respuesta
 	c.ServeJSON()
 }

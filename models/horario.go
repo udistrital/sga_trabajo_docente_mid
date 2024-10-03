@@ -1,5 +1,7 @@
 package models
 
+import "encoding/json"
+
 type ColocacionEspacioAcademico struct {
 	Id                             int    `json:"Id,omitempty"`
 	EspacioAcademicoId             string `json:"EspacioAcademicoId,omitempty"`
@@ -12,8 +14,8 @@ type ColocacionEspacioAcademico struct {
 }
 
 type ResumenColocacion struct {
-	Colocacion    string        `json:"colocacion,omitempty"`
-	EspacioFisico EspacioFisico `json:"espacio_fisico,omitempty"`
+	Colocacion    json.RawMessage `json:"colocacion,omitempty"`
+	EspacioFisico EspacioFisico   `json:"espacio_fisico,omitempty"`
 }
 
 type EspacioFisico struct {
@@ -21,4 +23,3 @@ type EspacioFisico struct {
 	EdificioId int `json:"edificio_id"`
 	SalonId    int `json:"salon_id"`
 }
-
